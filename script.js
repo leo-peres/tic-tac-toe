@@ -35,6 +35,16 @@ const gameBoard = (() => {
 
     const getCell = (row, col) => gameBoardArr[row-1][col-1];
 
+    const nEmptyCells = () => {
+
+        let row1c = gameBoardArr[0].filter((cell) => !cell.isMarked()).length;
+        let row2c = gameBoardArr[1].filter((cell) => !cell.isMarked()).length;
+        let row3c = gameBoardArr[2].filter((cell) => !cell.isMarked()).length;
+
+        return row1c + row2c + row3c;
+
+    }
+
     const setMark = (row, col, mark) => {gameBoardArr[row-1][col-1].setMark(mark)}
     const getMark = (row, col) => gameBoardArr[row-1][col-1].getMark();
 
@@ -80,19 +90,19 @@ const gameBoard = (() => {
 
     };
 
-    const checkTie = (mark, otherMark) => {
+    const checkTie = (mark, rem, omark, orem) => {
+
+        let emptyCells = nEmptyCells();
+
+        const nEmpty = (wcells) => {
+            return wcells.filter((cell) => !cell.isMarked()).length;
+        }
 
         const isEmpty = (wcells) => {
-            return wcells.every((cell) => !cell.isMarked());
+            return nEmpty(wcells) == 3;
         }
 
-        const hasXO = (wcells, mark, otherMark) => {
-            let hasMark = wcells.some((cell) => cell.getMark() === mark);
-            let hasOtherMark = wcells.some((cell) => cell.getMark() === otherMark)
-            return hasMark && hasOtherMark;
-        }
-
-        const checkPossibleWin = (wcells, mark) => {
+        const hasOnlyMark = (wcells, mark) => {
 
             if(!isEmpty(wcells)) {
                 if(wcells.some((cell) => cell.isMarked() && cell.getMark() !== mark))
@@ -101,15 +111,19 @@ const gameBoard = (() => {
                     return true;
             }
 
-            return true;
+            return true;           
 
         }
 
-        let count = winCells.filter((wcells) => checkPossibleWin(wcells, mark)).length;
-        let countEmpty = winCells.filter((wcells) => isEmpty(wcells)).length;
-        let countXO = winCells.filter((wcells) => hasXO(wcells, mark, otherMark)).length;
+        const isWinnable = (wcells, mark, rem, orem) => {
+            let empty = nEmpty(wcells);
+            return hasOnlyMark(wcells, mark) &&
+                   empty <= rem &&
+                   emptyCells - empty >= orem;
+        }
 
-        return count == 0 || (countEmpty == 1 && countXO == 7);
+        return winCells.filter((wcells) => isWinnable(wcells, mark, rem, orem)).length == 0 &&
+               winCells.filter((wcells) => isWinnable(wcells, omark, orem, rem)).length == 0;
 
     };
 
@@ -157,11 +171,17 @@ const gameControl = (() => {
 
     let n_rounds = 0;
 
+    let player1RemainingMoves = 5;
+    let player2RemainingMoves = 4;
+
     const getCurrentPlayerName = () => n_rounds%2 ? game.getPlayer2Name() : game.getPlayer1Name();
     const getCurrentPlayerMark = () => n_rounds%2 ? game.getPlayer2Mark() : game.getPlayer1Mark();
+    const getCurrentPlayerRemainingMoves = () => n_rounds%2 ? player2RemainingMoves : player1RemainingMoves;
 
     const getOtherPlayerName = () => n_rounds%2 ? game.getPlayer1Name() : game.getPlayer2Name();
     const getOtherPlayerMark = () => n_rounds%2 ? game.getPlayer1Mark() : game.getPlayer2Mark();
+    const getOtherPlayerRemainingMoves = () => n_rounds%2 ? player1RemainingMoves : player2RemainingMoves;
+
 
     const playRound = () => {
 
@@ -171,12 +191,20 @@ const gameControl = (() => {
         let [row, col] = prompt("YOUR MOVE").split(" ").map((e) => parseInt(e));
 
         gameBoard.setMark(row, col, mark);
-        
+
+        if(n_rounds%2 == 0)
+            player1RemainingMoves--;
+        else
+            player2RemainingMoves--;
+
     }
 
     const play = () => {
 
         n_rounds = 0;
+
+        player1RemainingMoves = 5;
+        player2RemainingMoves = 4;
 
         gameBoard.clear();
 
@@ -191,7 +219,7 @@ const gameControl = (() => {
                 console.log(`${getOtherPlayerName()} WINS!`)
                 break;
             }
-            if(gameBoard.checkTie(getCurrentPlayerMark(), getOtherPlayerMark())) {
+            if(gameBoard.checkTie(getCurrentPlayerMark(), getCurrentPlayerRemainingMoves(), getOtherPlayerMark(), getOtherPlayerRemainingMoves())) {
                 console.log("A TIE!");
                 break;
             }
