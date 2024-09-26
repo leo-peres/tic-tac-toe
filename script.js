@@ -33,6 +33,8 @@ const gameBoard = (() => {
             gameBoardArr[i].push(cellFactory(i + 1, j + 1));
     }
 
+    const getCell = (row, col) => gameBoardArr[row-1][col-1];
+
     const setMark = (row, col, mark) => {gameBoardArr[row-1][col-1].setMark(mark)}
     const getMark = (row, col) => gameBoardArr[row-1][col-1].getMark();
 
@@ -50,25 +52,53 @@ const gameBoard = (() => {
 
     };
 
+    const winCells = [
+        [getCell(1, 1), getCell(1, 2), getCell(1, 3)],
+        [getCell(2, 1), getCell(2, 2), getCell(2, 3)],
+        [getCell(3, 1), getCell(3, 2), getCell(3, 3)],
+        [getCell(1, 1), getCell(2, 1), getCell(3, 1)],
+        [getCell(1, 2), getCell(2, 2), getCell(3, 2)],
+        [getCell(1, 3), getCell(2, 3), getCell(3, 3)],
+        [getCell(1, 1), getCell(2, 2), getCell(3, 3)],
+        [getCell(3, 1), getCell(2, 2), getCell(1, 3)]
+    ];
+
+    const checkWin = () => {
+
+        let hasAWinner = false;
+
+        for(let i = 0; i < 8; i++) {
+            let wCells = winCells[i];
+            firstMark = wCells[0].getMark();
+            if(wCells.every((cell) => cell.isMarked() && cell.getMark() === firstMark)) {
+                hasAWinner = true;
+                break;
+            }         
+        }
+
+        return hasAWinner;
+
+    };
+
+    const checkTie = () => {
+
+        let tie = false;
+
+        return tie;
+
+    };
+
     return {
 
         setMark,
         getMark,
+        checkWin,
         clear,
         printBoard
 
     };
 
 })();
-
-//game state:
-//1. number of turns
-//2. whose turn is it
-//3. game board current's state (that is, some cells will be marked with X's and O's)
-
-//game start (i.e. before 1st move): board is empty and it's player 1's turn
-//after ith move: check for win condition or tie condition
-//before (i+1)th move: it's player (2 - i%2)'s turn
 
 const game = (() => {
 
@@ -123,7 +153,7 @@ const gameControl = (() => {
 
         gameBoard.clear();
 
-        while(n_rounds < 9) {
+        while(n_rounds < 9 && !gameBoard.checkWin()) {
             gameBoard.printBoard();
             playRound();
         }
