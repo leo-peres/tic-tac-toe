@@ -80,31 +80,36 @@ const gameBoard = (() => {
 
     };
 
-    const checkTie = (mark) => {
+    const checkTie = (mark, otherMark) => {
+
+        const isEmpty = (wcells) => {
+            return wcells.every((cell) => !cell.isMarked());
+        }
+
+        const hasXO = (wcells, mark, otherMark) => {
+            let hasMark = wcells.some((cell) => cell.getMark() === mark);
+            let hasOtherMark = wcells.some((cell) => cell.getMark() === otherMark)
+            return hasMark && hasOtherMark;
+        }
 
         const checkPossibleWin = (wcells, mark) => {
 
-            if(wcells.some((cell) => !cell.isMarked())) {
+            if(!isEmpty(wcells)) {
                 if(wcells.some((cell) => cell.isMarked() && cell.getMark() !== mark))
                     return false;
                 else
                     return true;
             }
 
-            return false;
+            return true;
 
         }
 
-        let tie = true;
+        let count = winCells.filter((wcells) => checkPossibleWin(wcells, mark)).length;
+        let countEmpty = winCells.filter((wcells) => isEmpty(wcells)).length;
+        let countXO = winCells.filter((wcells) => hasXO(wcells, mark, otherMark)).length;
 
-        for(let i = 0; i < 8; i++) {
-            if(checkPossibleWin(winCells[i], mark)) {
-                tie = false;
-                break;
-            }
-        }
-
-        return tie;
+        return count == 0 || (countEmpty == 1 && countXO == 7);
 
     };
 
@@ -156,6 +161,7 @@ const gameControl = (() => {
     const getCurrentPlayerMark = () => n_rounds%2 ? game.getPlayer2Mark() : game.getPlayer1Mark();
 
     const getOtherPlayerName = () => n_rounds%2 ? game.getPlayer1Name() : game.getPlayer2Name();
+    const getOtherPlayerMark = () => n_rounds%2 ? game.getPlayer1Mark() : game.getPlayer2Mark();
 
     const playRound = () => {
 
@@ -165,8 +171,6 @@ const gameControl = (() => {
         let [row, col] = prompt("YOUR MOVE").split(" ").map((e) => parseInt(e));
 
         gameBoard.setMark(row, col, mark);
-
-        n_rounds++;
         
     }
 
@@ -180,12 +184,14 @@ const gameControl = (() => {
 
             gameBoard.printBoard();
             playRound();
+            
+            n_rounds++;
 
             if(gameBoard.checkWin()) {
                 console.log(`${getOtherPlayerName()} WINS!`)
                 break;
             }
-            if(gameBoard.checkTie(getCurrentPlayerMark())) {
+            if(gameBoard.checkTie(getCurrentPlayerMark(), getOtherPlayerMark())) {
                 console.log("A TIE!");
                 break;
             }
