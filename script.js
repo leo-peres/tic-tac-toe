@@ -68,9 +68,9 @@ const gameBoard = (() => {
         let hasAWinner = false;
 
         for(let i = 0; i < 8; i++) {
-            let wCells = winCells[i];
-            firstMark = wCells[0].getMark();
-            if(wCells.every((cell) => cell.isMarked() && cell.getMark() === firstMark)) {
+            let wcells = winCells[i];
+            firstMark = wcells[0].getMark();
+            if(wcells.every((cell) => cell.isMarked() && cell.getMark() === firstMark)) {
                 hasAWinner = true;
                 break;
             }         
@@ -80,9 +80,29 @@ const gameBoard = (() => {
 
     };
 
-    const checkTie = () => {
+    const checkTie = (mark) => {
 
-        let tie = false;
+        const checkPossibleWin = (wcells, mark) => {
+
+            if(wcells.some((cell) => !cell.isMarked())) {
+                if(wcells.some((cell) => cell.isMarked() && cell.getMark() !== mark))
+                    return false;
+                else
+                    return true;
+            }
+
+            return false;
+
+        }
+
+        let tie = true;
+
+        for(let i = 0; i < 8; i++) {
+            if(checkPossibleWin(winCells[i], mark)) {
+                tie = false;
+                break;
+            }
+        }
 
         return tie;
 
@@ -93,6 +113,7 @@ const gameBoard = (() => {
         setMark,
         getMark,
         checkWin,
+        checkTie,
         clear,
         printBoard
 
@@ -131,8 +152,10 @@ const gameControl = (() => {
 
     let n_rounds = 0;
 
-    const getCurrentPlayerName = () => n_rounds%2 ? game.getPlayer1Name() : game.getPlayer2Name();
-    const getCurrentPlayerMark = () => n_rounds%2 ? game.getPlayer1Mark() : game.getPlayer2Mark();
+    const getCurrentPlayerName = () => n_rounds%2 ? game.getPlayer2Name() : game.getPlayer1Name();
+    const getCurrentPlayerMark = () => n_rounds%2 ? game.getPlayer2Mark() : game.getPlayer1Mark();
+
+    const getOtherPlayerName = () => n_rounds%2 ? game.getPlayer1Name() : game.getPlayer2Name();
 
     const playRound = () => {
 
@@ -153,9 +176,20 @@ const gameControl = (() => {
 
         gameBoard.clear();
 
-        while(n_rounds < 9 && !gameBoard.checkWin()) {
+        while(n_rounds < 9) {
+
             gameBoard.printBoard();
             playRound();
+
+            if(gameBoard.checkWin()) {
+                console.log(`${getOtherPlayerName()} WINS!`)
+                break;
+            }
+            if(gameBoard.checkTie(getCurrentPlayerMark())) {
+                console.log("A TIE!");
+                break;
+            }
+
         }
 
         gameBoard.printBoard();
