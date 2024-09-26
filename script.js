@@ -1,15 +1,22 @@
-const cellFactory = (row, col) => {
+function cellFactory(row, col) {
 
     let mark = "-";
 
-    const isMarked = () => mark !== "-";
-    const clearMark = () => mark = "-";
+    const getRow = () => row;
+    const getCol = () => col;
+
+    const setMark = (newMark) => {mark = newMark};
+    const getMark = () => mark;
+
+    const isMarked = function () {return mark !== "-"};
+    const clearMark = function () {mark = "-"};
 
     return {
 
-        row,
-        col,
-        mark,
+        getRow,
+        getCol,
+        setMark,
+        getMark,
         isMarked,
         clearMark
 
@@ -26,10 +33,10 @@ const gameBoard = (() => {
             gameBoardArr[i].push(cellFactory(i + 1, j + 1));
     }
 
-    const setMark = (row, col, mark) => {gameBoardArr[row-1][col-1].mark = mark}
-    const getMark = (row, col) => gameBoardArr[row-1][col-1].mark;
+    const setMark = (row, col, mark) => {gameBoardArr[row-1][col-1].setMark(mark)}
+    const getMark = (row, col) => gameBoardArr[row-1][col-1].getMark();
 
-    const clearGameBoard = () => {
+    const clear = () => {
         gameBoardArr.forEach((row) => {row.forEach((cell) => {cell.clearMark();});});
     }
 
@@ -47,7 +54,7 @@ const gameBoard = (() => {
 
         setMark,
         getMark,
-        clearGameBoard,
+        clear,
         printBoard
 
     };
@@ -114,12 +121,14 @@ const gameControl = (() => {
 
         n_rounds = 0;
 
-        gameBoard.clearGameBoard();
+        gameBoard.clear();
 
         while(n_rounds < 9) {
             gameBoard.printBoard();
             playRound();
         }
+
+        gameBoard.printBoard();
 
     }
 
