@@ -22,7 +22,7 @@ function cellFactory(row, col) {
 
     };
 
-}
+};
 
 function winningCellsFactory(cells) {
 
@@ -47,8 +47,6 @@ function winningCellsFactory(cells) {
     const win = (mark) => hasOnlyMark(mark) && nEmpty() == 0;
 
     const update = (xRem, oRem) => {
-
-        console.log(`${xRem} ${oRem}`)
 
         if(xWable)
             xWable = winnable("X", xRem);
@@ -81,7 +79,7 @@ function winningCellsFactory(cells) {
 
     };
 
-}
+};
 
 const gameBoard = (() => {
 
@@ -170,7 +168,7 @@ const gameBoard = (() => {
         winCells.forEach((wcells) => wcells.update(xRemaining, oRemaining));
         if(checkWin())
             return "w";
-        else if(checkTie())
+        if(checkTie())
             return "t";
 
         return ""
@@ -231,20 +229,38 @@ const gameControl = (() => {
     const getOtherPlayerMark = () => n_rounds%2 ? game.getPlayer1Mark() : game.getPlayer2Mark();
     const getOtherPlayerRemainingMoves = () => n_rounds%2 ? player1RemainingMoves : player2RemainingMoves;
 
+    const afterMove = () => {
 
-    const playRound = () => {
+        let result = gameBoard.checkResult();
+
+        if(result === "w")
+            alert(`${getOtherPlayerName()} WINS!`);
+        else if(result === "t")
+            alert("A TIE!");
+
+    }
+
+    const makeMove = (evt) => {
+
+        const cell = evt.target;
+        let row = parseInt(cell.getAttribute("row"));
+        let col = parseInt(cell.getAttribute("col"));
+        cell.removeEventListener("click", makeMove);
+
+        cell.style.backgroundImage = n_rounds%2 == 0 ? "url(./images/cross.svg)" : "url(./images/circle.svg)";
+        cell.style.backgroundSize = "cover";
 
         mark = getCurrentPlayerMark();
-
-        console.log(`PLAYER ${1 + n_rounds%2}'S TURN`);
-        let [row, col] = prompt("YOUR MOVE").split(" ").map((e) => parseInt(e));
-
         gameBoard.setMark(row, col, mark);
 
         if(n_rounds%2 == 0)
             player1RemainingMoves--;
         else
             player2RemainingMoves--;
+
+        n_rounds++;
+
+        afterMove();
 
     }
 
@@ -257,6 +273,19 @@ const gameControl = (() => {
 
         gameBoard.reset(true);
 
+        const gameBoardEl = document.querySelector(".gameboard");
+        for(let i = 0; i < 3; i++) {
+            for(let j = 0; j < 3; j++) {
+                const cellBtn = document.createElement("button");
+                cellBtn.classList.add("cell");
+                cellBtn.setAttribute("row", i+1);
+                cellBtn.setAttribute("col", j+1);
+                cellBtn.addEventListener("click", makeMove);
+                gameBoardEl.appendChild(cellBtn);
+            }
+        }
+
+        /*
         while(n_rounds < 9) {
 
             gameBoard.print();
@@ -277,8 +306,9 @@ const gameControl = (() => {
         }
 
         gameBoard.print();
+        */
 
-    }
+    };
 
     return {
 

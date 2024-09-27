@@ -1,14 +1,26 @@
+:root {
+
+    --royal-blue: #01295f;
+    --cerulean: #437f97;
+    --olive: #849324;
+    --yellow: #ffb30f;
+    --red: #fd151b;
+
+}
+
 body {
+    background-color: var(--royal-blue);
     height: 100vh;
     margin: 0;
 }
 
 .gameboard {
-    background-color: yellowgreen;
-    width: 50%;
-    height: 50%;
+    background-color: #080808;
+    width: 480px;
+    height: 480px;
     margin: auto;
     margin-top: 240px;
+    cursor: url(./images/cross.svg), auto;
 
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -18,8 +30,14 @@ body {
 
 }
 
+.gameboard * {
+    cursor: inherit;
+}
+
+
+
 .cell {
-    background-color: gray;
+    background-color: var(--cerulean);
     width: 100%;
     height: 100%;
     padding: 0;
