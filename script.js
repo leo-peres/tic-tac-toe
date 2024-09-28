@@ -202,10 +202,8 @@ const game = (() => {
     const getPlayer2Mark = () => "O";
 
     const makeMove = (row, col, p1) => {
-
         mark = p1 ? player1.mark : player2.mark;
         gameBoard.setMark(row, col, mark);
-
     };
 
     const checkResult = () => gameBoard.checkResult();
@@ -232,9 +230,6 @@ const gameControl = (() => {
     let player1RemainingMoves = 5;
     let player2RemainingMoves = 4;
 
-    const crossPath = "url(./images/cross.svg)";
-    const circlePath = "url(./images/circle.svg)";
-
     const getCurrentPlayerName = () => n_rounds%2 ? game.getPlayer2Name() : game.getPlayer1Name();
     const getCurrentPlayerMark = () => n_rounds%2 ? game.getPlayer2Mark() : game.getPlayer1Mark();
     const getCurrentPlayerRemainingMoves = () => n_rounds%2 ? player2RemainingMoves : player1RemainingMoves;
@@ -243,33 +238,22 @@ const gameControl = (() => {
     const getOtherPlayerMark = () => n_rounds%2 ? game.getPlayer1Mark() : game.getPlayer2Mark();
     const getOtherPlayerRemainingMoves = () => n_rounds%2 ? player1RemainingMoves : player2RemainingMoves;
 
-    const newMove = (evt) => {
+    const newMove = (row, col) => {
 
-        const cell = evt.target;
-        if(!cell.hasAttribute("marked")) {
+        game.makeMove(row, col, n_rounds%2 == 0);
+        let result = game.checkResult();
 
-            let row = parseInt(cell.getAttribute("row"));
-            let col = parseInt(cell.getAttribute("col"));
+        if(result === "w")
+            return [result, getCurrentPlayerName()];
+        else if(result === "t")
+            return [result, ""];
 
-            cell.style.backgroundImage = n_rounds%2 == 0 ? crossPath : circlePath;
-            cell.style.backgroundSize = "cover";
+        n_rounds++;
+        n_rounds%2 ? player2RemainingMoves-- : player1RemainingMoves--;
 
-            cell.setAttribute("marked", "");
+        return [result, ""];
 
-            game.makeMove(row, col, n_rounds%2 == 0);
-            let result = game.checkResult();
-
-            if(result === "w")
-                alert(`${getCurrentPlayerName()} WINS!`);
-            else if(result === "t")
-                alert("A TIE!");
-
-            n_rounds++;
-            n_rounds%2 ? player2RemainingMoves-- : player1RemainingMoves--;
-
-        }
-
-    }
+    };
 
     const start = () => {
 
@@ -280,27 +264,59 @@ const gameControl = (() => {
 
         gameBoard.reset(true);
 
-        const gameBoardEl = document.querySelector(".gameboard");
-        for(let i = 0; i < 3; i++) {
-            for(let j = 0; j < 3; j++) {
-                const cellBtn = document.createElement("button");
-                cellBtn.classList.add("cell");
-                cellBtn.setAttribute("row", i+1);
-                cellBtn.setAttribute("col", j+1);
-                cellBtn.addEventListener("click", newMove);
-                gameBoardEl.appendChild(cellBtn);
-            }
-        }
-
     };
 
     return {
 
-        //getCurrentPlayerName,
-        //getCurrentPlayerMark,
+        getCurrentPlayerName,
+        getCurrentPlayerMark,
+        newMove,
         start
 
     };
+
+})();
+
+const gameInterface = (() => {
+
+    const crossPath = "url(./images/cross.svg)";
+    const circlePath = "url(./images/circle.svg)";
+
+    const newMove = (evt) => {
+
+        const cell = evt.target;
+        if(!cell.hasAttribute("marked")) {
+
+            let row = parseInt(cell.getAttribute("row"));
+            let col = parseInt(cell.getAttribute("col"));
+
+            cell.style.backgroundImage = gameControl.getCurrentPlayerMark() === "X" ? crossPath : circlePath;
+            cell.style.backgroundSize = "cover";
+
+            cell.setAttribute("marked", "");
+
+            let [result, winnerName] = gameControl.newMove(row, col);
+
+            if(result === "w")
+                alert(`${winnerName} WINS!`);
+            else if(result === "t")
+                alert("A TIE!");
+
+        }   
+
+    }
+
+    const gameBoardEl = document.querySelector(".gameboard");
+    for(let i = 0; i < 3; i++) {
+        for(let j = 0; j < 3; j++) {
+            const cellBtn = document.createElement("button");
+            cellBtn.classList.add("cell");
+            cellBtn.setAttribute("row", i+1);
+            cellBtn.setAttribute("col", j+1);
+            cellBtn.addEventListener("click", newMove);
+            gameBoardEl.appendChild(cellBtn);
+        }
+    }
 
 })();
 
