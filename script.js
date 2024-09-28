@@ -189,8 +189,8 @@ const gameBoard = (() => {
 
 const game = (() => {
 
-    let player1 = { name: "Joe", mark: "X"};
-    let player2 = { name: "Jack", mark: "O"};
+    let player1 = { name: "Player 1", mark: "X"};
+    let player2 = { name: "Player 2", mark: "O"};
 
     const setPlayer1Name = (name) => {player1.name = name;};
     const getPlayer1Name = () => player1.name;
@@ -200,7 +200,16 @@ const game = (() => {
 
     const getPlayer1Mark = () => "X";
     const getPlayer2Mark = () => "O";
-    
+
+    const makeMove = (row, col, p1) => {
+
+        mark = p1 ? player1.mark : player2.mark;
+        gameBoard.setMark(row, col, mark);
+
+    };
+
+    const checkResult = () => gameBoard.checkResult();
+
     return {
 
         setPlayer1Name,
@@ -208,7 +217,9 @@ const game = (() => {
         setPlayer2Name,
         getPlayer2Name,
         getPlayer1Mark,
-        getPlayer2Mark
+        getPlayer2Mark,
+        makeMove,
+        checkResult
 
     };
 
@@ -221,6 +232,9 @@ const gameControl = (() => {
     let player1RemainingMoves = 5;
     let player2RemainingMoves = 4;
 
+    const crossPath = "url(./images/cross.svg)";
+    const circlePath = "url(./images/circle.svg)";
+
     const getCurrentPlayerName = () => n_rounds%2 ? game.getPlayer2Name() : game.getPlayer1Name();
     const getCurrentPlayerMark = () => n_rounds%2 ? game.getPlayer2Mark() : game.getPlayer1Mark();
     const getCurrentPlayerRemainingMoves = () => n_rounds%2 ? player2RemainingMoves : player1RemainingMoves;
@@ -229,42 +243,35 @@ const gameControl = (() => {
     const getOtherPlayerMark = () => n_rounds%2 ? game.getPlayer1Mark() : game.getPlayer2Mark();
     const getOtherPlayerRemainingMoves = () => n_rounds%2 ? player1RemainingMoves : player2RemainingMoves;
 
-    const afterMove = () => {
-
-        let result = gameBoard.checkResult();
-
-        if(result === "w")
-            alert(`${getOtherPlayerName()} WINS!`);
-        else if(result === "t")
-            alert("A TIE!");
-
-    }
-
-    const makeMove = (evt) => {
+    const newMove = (evt) => {
 
         const cell = evt.target;
-        let row = parseInt(cell.getAttribute("row"));
-        let col = parseInt(cell.getAttribute("col"));
-        cell.removeEventListener("click", makeMove);
+        if(!cell.hasAttribute("marked")) {
 
-        cell.style.backgroundImage = n_rounds%2 == 0 ? "url(./images/cross.svg)" : "url(./images/circle.svg)";
-        cell.style.backgroundSize = "cover";
+            let row = parseInt(cell.getAttribute("row"));
+            let col = parseInt(cell.getAttribute("col"));
 
-        mark = getCurrentPlayerMark();
-        gameBoard.setMark(row, col, mark);
+            cell.style.backgroundImage = n_rounds%2 == 0 ? crossPath : circlePath;
+            cell.style.backgroundSize = "cover";
 
-        if(n_rounds%2 == 0)
-            player1RemainingMoves--;
-        else
-            player2RemainingMoves--;
+            cell.setAttribute("marked", "");
 
-        n_rounds++;
+            game.makeMove(row, col, n_rounds%2 == 0);
+            let result = game.checkResult();
 
-        afterMove();
+            if(result === "w")
+                alert(`${getCurrentPlayerName()} WINS!`);
+            else if(result === "t")
+                alert("A TIE!");
+
+            n_rounds++;
+            n_rounds%2 ? player2RemainingMoves-- : player1RemainingMoves--;
+
+        }
 
     }
 
-    const play = () => {
+    const start = () => {
 
         n_rounds = 0;
 
@@ -280,33 +287,10 @@ const gameControl = (() => {
                 cellBtn.classList.add("cell");
                 cellBtn.setAttribute("row", i+1);
                 cellBtn.setAttribute("col", j+1);
-                cellBtn.addEventListener("click", makeMove);
+                cellBtn.addEventListener("click", newMove);
                 gameBoardEl.appendChild(cellBtn);
             }
         }
-
-        /*
-        while(n_rounds < 9) {
-
-            gameBoard.print();
-            playRound();
-            
-            n_rounds++;
-
-            let result = gameBoard.checkResult();
-            if(result === "w") {
-                console.log(`${getOtherPlayerName()} WINS!`);
-                break;
-            }
-            if(result === "t") {
-                console.log("A TIE!");
-                break;
-            }
-
-        }
-
-        gameBoard.print();
-        */
 
     };
 
@@ -314,10 +298,10 @@ const gameControl = (() => {
 
         //getCurrentPlayerName,
         //getCurrentPlayerMark,
-        play
+        start
 
     };
 
 })();
 
-gameControl.play();
+gameControl.start();

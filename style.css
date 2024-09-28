@@ -10,16 +10,14 @@
 
 body {
     background-color: var(--royal-blue);
-    height: 100vh;
-    margin: 0;
+    margin: 0
 }
 
 .gameboard {
     background-color: #080808;
     width: 480px;
     height: 480px;
-    margin: auto;
-    margin-top: 240px;
+    margin: 120px auto 0;
     cursor: url(./images/cross.svg), auto;
 
     display: grid;
