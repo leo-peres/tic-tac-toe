@@ -8,8 +8,36 @@
     <script src="./script.js" defer></script>
 </head>
 <body>
+
+    <h1 class="game-header">Tic-Tac-Toe</h1>
     
-    <div class="gameboard"></div>
+    <div class="game-container">
+
+        <div class="display">Display</div>
+
+        <div class="player-options">
+            <div class="player-container">
+                <div class="player-name">Player 1</div>
+                <div class="player-name-input">
+                    <input type="text" id="p1-name-input"><button>OK</button>
+                </div>
+            </div>
+            <div class="player-container">
+                <div class="player-name">Player 2</div>
+                <div class="player-name-input">
+                    <input type="text" id="p2-name-input"><button>OK</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="gameboard"></div>
+
+        <div class="game-btn-container">
+            <button class="start-btn">Start</button>
+            <button class="reset-btn">Reset</button>
+        </div>
+
+    </div>
 
 </body>
 </html>

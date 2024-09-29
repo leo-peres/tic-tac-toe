@@ -6,19 +6,96 @@
     --yellow: #ffb30f;
     --red: #fd151b;
 
+    --cross-path: url(./images/cross.svg);
+    --circle-path: url(./images/circle.svg);
+
 }
 
 body {
     background-color: var(--royal-blue);
-    margin: 0
+    margin: 0;
+    height: 100vh;
+
+    display: grid;
+    grid-template-rows: 120px 1fr;
+    justify-content: center;
+    gap: 36px;
+}
+
+.game-header {
+    color: var(--yellow);
+    font-size: 3.8rem;
+    text-align: center;
+
+    grid-row: 1;
+}
+
+.game-container {
+    grid-row: 2;
+
+    display: grid;
+    grid-template-rows: 80px 420px 80px;
+    grid-template-columns: 280px 420px 280px;
+}
+
+.display {
+    color: var(--olive);
+    font-size: 2.4rem;
+    font-weight: bold;
+    margin: auto;
+
+    grid-row: 1;
+    grid-column: 2;
+}
+
+.player-options {
+    grid-row: 2;
+    grid-column: 1;
+
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+}
+
+.player-container {
+    color: var(--red);
+
+    display: grid;
+    grid-template-rows: 48px 48px 1fr;
+}
+
+.player-container > * {
+    margin:auto 24px;
+}
+
+.player-name {
+    font-size: 1.6rem;
+    font-weight: bold;
+}
+
+.player-name-input input {
+    color: #fafafa;
+    background-color: var(--cerulean);
+    height: 24px;
+    width: 120px;
+    border: 0;
+    border-radius: 12px;
+    margin-right: 12px;
+}
+
+.player-name-input button {
+    background-color: var(--red);
+    border: 0;
 }
 
 .gameboard {
     background-color: #080808;
-    width: 480px;
+    /*width: 480px;
     height: 480px;
-    margin: 120px auto 0;
+    margin: 120px auto 0;*/
     cursor: url(./images/cross.svg), auto;
+
+    grid-row: 2;
+    grid-column: 2;
 
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -40,4 +117,39 @@ body {
     height: 100%;
     padding: 0;
     border: 0;
+}
+
+.cell[marked="X"] {
+    background-image: var(--cross-path);
+    background-size: cover;
+}
+
+.cell[marked="O"] {
+    background-image: var(--circle-path);
+    background-size: cover;
+}
+
+.game-btn-container {
+    grid-row: 3;
+    grid-column: 2;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.game-btn-container button {
+    color: #fafafa;
+    background-color: var(--olive);
+    width: 100px;
+    height: 40px;
+    margin: auto;
+
+    --light-border: #a4b344;
+    --dark-border: #647304;
+    --border-size: 4px;
+
+    border-left: var(--border-size) solid var(--light-border);
+    border-top: var(--border-size) solid var(--light-border);
+    border-right: var(--border-size) solid var(--dark-border);
+    border-bottom: var(--border-size) solid var(--dark-border)
 }

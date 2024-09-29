@@ -8,8 +8,8 @@ function cellFactory(row, col) {
     const setMark = (newMark) => {mark = newMark};
     const getMark = () => mark;
 
-    const isMarked = function () {return mark !== "-"};
-    const clearMark = function () {mark = "-"};
+    const isMarked = () => mark !== "-";
+    const clearMark = () => {mark = "-"};
 
     return {
 
@@ -46,6 +46,8 @@ function winningCellsFactory(cells) {
     const winnable = (mark, rem) => hasOnlyMark(mark) && rem >= nEmpty(cells);
     const win = (mark) => hasOnlyMark(mark) && nEmpty() == 0;
 
+    const push = (cell) => cells.push(cell);
+
     const update = (xRem, oRem) => {
 
         if(xWable)
@@ -74,6 +76,7 @@ function winningCellsFactory(cells) {
         oWinnable,
         xWin,
         oWin,
+        push,
         update,
         reset
 
@@ -102,30 +105,17 @@ const gameBoard = (() => {
     const buildWinCells = () => {
 
         winCells.length = 0;
+        for(let i = 0; i < 2*(dim + 1); i++)
+            winCells.push(winningCellsFactory([]));
 
         for(let i = 1; i <= dim; i++) {
-            let row = [];
-            for(let j = 1; j <= dim; j++)
-                row.push(getCell(i, j));
-            winCells.push(winningCellsFactory(row));
+            for(let j = 1; j <= dim; j++) {
+                winCells[i-1].push(getCell(i, j));
+                winCells[dim+j-1].push(getCell(i, j));
+                if(i == j) winCells[2*dim].push(getCell(i, j));
+                if(i == dim - j + 1) winCells[2*dim + 1].push(getCell(i, j));
+            }
         }
-
-        for(let j = 1; j <= dim; j++) {
-            let col = [];
-            for(let i = 1; i <= dim; i++)
-                col.push(getCell(i, j));
-            winCells.push(winningCellsFactory(col));
-        }
-
-        const mainDiag = [];
-        for(let k = 1; k <= dim; k++)
-            mainDiag.push(getCell(k, k));
-        winCells.push(winningCellsFactory(mainDiag));
-
-        const offDiag = [];
-        for(let k = 1; k <= dim; k++)
-            offDiag.push(getCell(k, dim - k + 1));
-        winCells.push(winningCellsFactory(offDiag));
 
     };
 
@@ -135,10 +125,7 @@ const gameBoard = (() => {
 
     const setMark = (row, col, mark) => {
         gameBoardArr[row-1][col-1].setMark(mark)
-        if(mark == "X")
-            xRemaining--;
-        else
-            oRemaining--;
+        mark === "X" ? xRemaining-- : oRemaining--;
     };
 
     const getMark = (row, col) => gameBoardArr[row-1][col-1].getMark();
@@ -164,15 +151,8 @@ const gameBoard = (() => {
     const checkTie = () => !winCells.some((wcells) => wcells.xWinnable() || wcells.oWinnable());
 
     const checkResult = () => {
-
         winCells.forEach((wcells) => wcells.update(xRemaining, oRemaining));
-        if(checkWin())
-            return "w";
-        if(checkTie())
-            return "t";
-
-        return ""
-
+        return (checkWin() && "w") || (checkTie() && "t") || "";
     };
 
     return {
@@ -189,8 +169,8 @@ const gameBoard = (() => {
 
 const game = (() => {
 
-    let player1 = { name: "Player 1", mark: "X"};
-    let player2 = { name: "Player 2", mark: "O"};
+    let player1 = { name: "Joe", mark: "X"};
+    let player2 = { name: "Jack", mark: "O"};
 
     const setPlayer1Name = (name) => {player1.name = name;};
     const getPlayer1Name = () => player1.name;
@@ -230,6 +210,12 @@ const gameControl = (() => {
     let player1RemainingMoves = 5;
     let player2RemainingMoves = 4;
 
+    const setPlayer1Name = (name) => {game.setPlayer1Name(name);};
+    const getPlayer1Name = () => game.getPlayer1Name();
+
+    const setPlayer2Name = (name) => {game.setPlayer2Name(name);};
+    const getPlayer2Name = () => game.getPlayer2Name();
+
     const getCurrentPlayerName = () => n_rounds%2 ? game.getPlayer2Name() : game.getPlayer1Name();
     const getCurrentPlayerMark = () => n_rounds%2 ? game.getPlayer2Mark() : game.getPlayer1Mark();
     const getCurrentPlayerRemainingMoves = () => n_rounds%2 ? player2RemainingMoves : player1RemainingMoves;
@@ -268,6 +254,10 @@ const gameControl = (() => {
 
     return {
 
+        setPlayer1Name,
+        getPlayer1Name,
+        setPlayer2Name,
+        getPlayer2Name,
         getCurrentPlayerName,
         getCurrentPlayerMark,
         newMove,
@@ -279,34 +269,39 @@ const gameControl = (() => {
 
 const gameInterface = (() => {
 
-    const crossPath = "url(./images/cross.svg)";
-    const circlePath = "url(./images/circle.svg)";
+    //const crossPath = "url(./images/cross.svg)";
+    //const circlePath = "url(./images/circle.svg)";
+
+    const gameBoardEl = document.querySelector(".gameboard");
+
+    const display = document.querySelector(".display");
+
+    const p1name = document.querySelector(".player-container:first-child .player-name");
+    const p2name = document.querySelector(".player-container:last-child .player-name");
 
     const newMove = (evt) => {
 
         const cell = evt.target;
         if(!cell.hasAttribute("marked")) {
 
+            cell.setAttribute("marked", gameControl.getCurrentPlayerMark());
+
             let row = parseInt(cell.getAttribute("row"));
             let col = parseInt(cell.getAttribute("col"));
-
-            cell.style.backgroundImage = gameControl.getCurrentPlayerMark() === "X" ? crossPath : circlePath;
-            cell.style.backgroundSize = "cover";
-
-            cell.setAttribute("marked", "");
 
             let [result, winnerName] = gameControl.newMove(row, col);
 
             if(result === "w")
-                alert(`${winnerName} WINS!`);
+                display.innerText = `${winnerName} WINS!`;
             else if(result === "t")
-                alert("A TIE!");
+                display.innerText = "A TIE!";
+            else
+                display.innerText = gameControl.getCurrentPlayerName() + "'s turn";
 
         }   
 
     }
 
-    const gameBoardEl = document.querySelector(".gameboard");
     for(let i = 0; i < 3; i++) {
         for(let j = 0; j < 3; j++) {
             const cellBtn = document.createElement("button");
@@ -317,6 +312,11 @@ const gameInterface = (() => {
             gameBoardEl.appendChild(cellBtn);
         }
     }
+
+    gameControl.setPlayer1Name(p1name.innerText);
+    gameControl.setPlayer2Name(p2name.innerText);
+
+    display.innerText = gameControl.getCurrentPlayerName() + "'s turn";
 
 })();
 
