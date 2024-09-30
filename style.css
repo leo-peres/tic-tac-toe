@@ -107,10 +107,20 @@ body {
     color: #fafafa;
     background-color: var(--red);
     font-weight: inherit;
-    width: 32px;
-    height: 24px;
-    border: 0;
+    width: 36px;
+    height: 28px;
+    /*border: 0;*/
+    padding: 0;
     margin: 4px 0px 0px 4px;
+
+    --light-border: #ff5941;
+    --dark-border: #c80000;
+    --border-size: 4px;
+
+    border-left: var(--border-size) solid var(--light-border);
+    border-top: var(--border-size) solid var(--light-border);
+    border-right: var(--border-size) solid var(--dark-border);
+    border-bottom: var(--border-size) solid var(--dark-border)
 }
 
 .gameboard {
@@ -166,12 +176,13 @@ body {
 .game-btn-container button {
     color: #fafafa;
     background-color: var(--olive);
+    font-weight: bold;
     width: var(--btn-width);
     height: var(--btn-height);
     margin: auto;
 
-    --light-border: #a4b344;
-    --dark-border: #647304;
+    --light-border: #b0be50;
+    --dark-border: #5a6a00;
     --border-size: 4px;
 
     border-left: var(--border-size) solid var(--light-border);
