@@ -72,18 +72,25 @@ body {
     font-weight: bold;
 }
 
-.player-name-input input {
+.player-name-input input,
+.player-name-input input:focus {
     color: #fafafa;
     background-color: var(--cerulean);
+    font-size: 1.2rem;
+    font-weight: bold;
     height: 24px;
     width: 120px;
+    outline: none;
+    padding-left: 12px;
     border: 0;
     border-radius: 12px;
     margin-right: 12px;
 }
 
 .player-name-input button {
+    color: #fafafa;
     background-color: var(--red);
+    height: 24px;
     border: 0;
 }
 

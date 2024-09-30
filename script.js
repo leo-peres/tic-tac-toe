@@ -207,6 +207,12 @@ const gameControl = (() => {
 
     let n_rounds = 0;
 
+    let p1First = true;
+    let xRound = true;
+
+    let winner1, winner2, tie = false;
+    winner1 = winner2 = false;
+
     let player1RemainingMoves = 5;
     let player2RemainingMoves = 4;
 
@@ -216,26 +222,34 @@ const gameControl = (() => {
     const setPlayer2Name = (name) => {game.setPlayer2Name(name);};
     const getPlayer2Name = () => game.getPlayer2Name();
 
-    const getCurrentPlayerName = () => n_rounds%2 ? game.getPlayer2Name() : game.getPlayer1Name();
-    const getCurrentPlayerMark = () => n_rounds%2 ? game.getPlayer2Mark() : game.getPlayer1Mark();
-    const getCurrentPlayerRemainingMoves = () => n_rounds%2 ? player2RemainingMoves : player1RemainingMoves;
+    const getCurrentPlayerName = () => xRound ? game.getPlayer1Name() : game.getPlayer2Name();
+    const getCurrentPlayerMark = () => xRound ? game.getPlayer1Mark() : game.getPlayer2Mark();
+    const getCurrentPlayerRemainingMoves = () => xRound ? player1RemainingMoves : player2RemainingMoves;
 
-    const getOtherPlayerName = () => n_rounds%2 ? game.getPlayer1Name() : game.getPlayer2Name();
-    const getOtherPlayerMark = () => n_rounds%2 ? game.getPlayer1Mark() : game.getPlayer2Mark();
-    const getOtherPlayerRemainingMoves = () => n_rounds%2 ? player1RemainingMoves : player2RemainingMoves;
+    const getOtherPlayerName = () => xRound ? game.getPlayer2Name() : game.getPlayer1Name();
+    const getOtherPlayerMark = () => xRound ? game.getPlayer2Mark() : game.getPlayer1Mark();
+    const getOtherPlayerRemainingMoves = () => xRound ? player2RemainingMoves : player1RemainingMoves;
+
+    const finished = () => winner1 || winner2 || tie;
 
     const newMove = (row, col) => {
 
         game.makeMove(row, col, n_rounds%2 == 0);
         let result = game.checkResult();
 
-        if(result === "w")
+        if(result === "w") {
+            xRound ? winner1 = true : winner2 = true;
             return [result, getCurrentPlayerName()];
-        else if(result === "t")
+        }
+        else if(result === "t") {
+            tie = true;
             return [result, ""];
+        }
 
         n_rounds++;
-        n_rounds%2 ? player2RemainingMoves-- : player1RemainingMoves--;
+        xRound ? player1RemainingMoves-- : player2RemainingMoves--;
+
+        xRound = !xRound;
 
         return [result, ""];
 
@@ -244,12 +258,19 @@ const gameControl = (() => {
     const start = () => {
 
         n_rounds = 0;
+        xRound = p1First;
+        finished = false;
 
-        player1RemainingMoves = 5;
-        player2RemainingMoves = 4;
+        player1RemainingMoves = 4 + Number(p1First);
+        player2RemainingMoves = 4 + Number(!p1First);
 
-        gameBoard.reset(true);
+        gameBoard.reset(p1First);
 
+    };
+
+    const startNewRound = () => {
+        p1First = !p1First;
+        start();
     };
 
     return {
@@ -260,8 +281,10 @@ const gameControl = (() => {
         getPlayer2Name,
         getCurrentPlayerName,
         getCurrentPlayerMark,
+        finished,
         newMove,
-        start
+        start,
+        startNewRound
 
     };
 
@@ -276,13 +299,44 @@ const gameInterface = (() => {
 
     const display = document.querySelector(".display");
 
-    const p1name = document.querySelector(".player-container:first-child .player-name");
-    const p2name = document.querySelector(".player-container:last-child .player-name");
+    const p1Name = document.getElementById("p1-name");
+    const p1NameInput = document.getElementById("p1-name-input");
+    const p1NameBtn = document.getElementById("p1-name-btn");
+
+    const p2Name = document.getElementById("p2-name");
+    const p2NameInput = document.getElementById("p2-name-input");
+    const p2NameBtn = document.getElementById("p2-name-btn");
+
+    const startBtn = document.querySelector(".start-btn");
+
+    const changePlayerName = (evt) => {
+
+        target = evt.target;
+        let p1 = target.id === "p1-name-btn";
+        let name = p1 ? p1NameInput.value : p2NameInput.value;
+
+        if(name) {
+            if(p1) {
+                gameControl.setPlayer1Name(name);
+                p1Name.innerText = name;
+            }
+            else {
+                gameControl.setPlayer2Name(name);
+                p2Name.innerText = name;
+            }
+        }
+
+    }
+
+    const startNewRound = () => {
+        document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("marked"));
+        gameControl.startNewRound();
+    }
 
     const newMove = (evt) => {
 
         const cell = evt.target;
-        if(!cell.hasAttribute("marked")) {
+        if(!cell.hasAttribute("marked") && !gameControl.finished()) {
 
             cell.setAttribute("marked", gameControl.getCurrentPlayerMark());
 
@@ -313,10 +367,15 @@ const gameInterface = (() => {
         }
     }
 
-    gameControl.setPlayer1Name(p1name.innerText);
-    gameControl.setPlayer2Name(p2name.innerText);
+    p1NameBtn.addEventListener("click", changePlayerName);
+    p2NameBtn.addEventListener("click", changePlayerName);
+
+    gameControl.setPlayer1Name(p1Name.innerText);
+    gameControl.setPlayer2Name(p2Name.innerText);
 
     display.innerText = gameControl.getCurrentPlayerName() + "'s turn";
+
+    startBtn.addEventListener("click", startNewRound);
 
 })();
 
