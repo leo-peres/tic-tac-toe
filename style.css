@@ -9,6 +9,9 @@
     --cross-path: url(./images/cross.svg);
     --circle-path: url(./images/circle.svg);
 
+    --btn-width: 100px;
+    --btn-height: 40px;
+
 }
 
 body {
@@ -58,6 +61,7 @@ body {
 
 .player-container {
     color: var(--red);
+    font-weight: bold;
 
     display: grid;
     grid-template-rows: 48px 48px 1fr;
@@ -74,7 +78,16 @@ body {
 .player-name,
 .player-score {
     font-size: 1.6rem;
-    font-weight: bold;
+}
+
+.player-name-input {
+    display: grid;
+    grid-template-rows: repeat(3, 1fr);
+    gap: 4px;
+}
+
+.player-name-input label {
+    margin: auto 0px 0px;
 }
 
 .player-name-input input,
@@ -82,21 +95,22 @@ body {
     color: #fafafa;
     background-color: var(--cerulean);
     font-size: 1.2rem;
-    font-weight: bold;
     height: 24px;
     width: 120px;
     outline: none;
     padding-left: 12px;
     border: 0;
     border-radius: 12px;
-    margin-right: 12px;
 }
 
 .player-name-input button {
     color: #fafafa;
     background-color: var(--red);
+    font-weight: inherit;
+    width: 32px;
     height: 24px;
     border: 0;
+    margin: 4px 0px 0px 4px;
 }
 
 .gameboard {
@@ -152,8 +166,8 @@ body {
 .game-btn-container button {
     color: #fafafa;
     background-color: var(--olive);
-    width: 100px;
-    height: 40px;
+    width: var(--btn-width);
+    height: var(--btn-height);
     margin: auto;
 
     --light-border: #a4b344;

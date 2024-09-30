@@ -382,6 +382,7 @@ const gameInterface = (() => {
         if(!gameControl.started()) {
             document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("marked"));
             gameControl.startNewGame();
+            updateScore();
             display.innerText = gameControl.getCurrentPlayerName() + "'s turn";
         }
     }
@@ -417,10 +418,8 @@ const gameInterface = (() => {
 
             let [result, winnerName] = gameControl.newMove(row, col);
 
-            if(result === "w") {
+            if(result === "w")
                 display.innerText = `${winnerName} WINS!`;
-                updateScore();
-            }
             else if(result === "t")
                 display.innerText = "A TIE!";
             else
