@@ -67,7 +67,12 @@ body {
     margin:auto 24px;
 }
 
-.player-name {
+.player-container > div:last-child {
+    visibility: hidden;
+}
+
+.player-name,
+.player-score {
     font-size: 1.6rem;
     font-weight: bold;
 }

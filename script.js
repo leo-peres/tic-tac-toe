@@ -169,8 +169,8 @@ const gameBoard = (() => {
 
 const game = (() => {
 
-    let player1 = { name: "Joe", mark: "X"};
-    let player2 = { name: "Jack", mark: "O"};
+    let player1 = { name: "Joe", mark: "X", score: 0};
+    let player2 = { name: "Jack", mark: "O", score: 0};
 
     const setPlayer1Name = (name) => {player1.name = name;};
     const getPlayer1Name = () => player1.name;
@@ -180,6 +180,14 @@ const game = (() => {
 
     const getPlayer1Mark = () => "X";
     const getPlayer2Mark = () => "O";
+
+    const getPlayer1Score = () => player1.score;
+    const getPlayer2Score = () => player2.score;
+
+    const incPlayer1Score = () => {player1.score++;};
+    const incPlayer2Score = () => {player2.score++;};
+
+    const resetPlayerScores = () => {player1.score = player2.score = 0;};
 
     const makeMove = (row, col, p1) => {
         mark = p1 ? player1.mark : player2.mark;
@@ -196,6 +204,11 @@ const game = (() => {
         getPlayer2Name,
         getPlayer1Mark,
         getPlayer2Mark,
+        getPlayer1Score,
+        getPlayer2Score,
+        incPlayer1Score,
+        incPlayer2Score,
+        resetPlayerScores,
         makeMove,
         checkResult
 
@@ -223,6 +236,9 @@ const gameControl = (() => {
     const setPlayer2Name = (name) => {game.setPlayer2Name(name);};
     const getPlayer2Name = () => game.getPlayer2Name();
 
+    const getPlayer1Score = () => game.getPlayer1Score();
+    const getPlayer2Score = () => game.getPlayer2Score();
+
     const getCurrentPlayerName = () => xRound ? game.getPlayer1Name() : game.getPlayer2Name();
     const getCurrentPlayerMark = () => xRound ? game.getPlayer1Mark() : game.getPlayer2Mark();
     const getCurrentPlayerRemainingMoves = () => xRound ? player1RemainingMoves : player2RemainingMoves;
@@ -240,8 +256,15 @@ const gameControl = (() => {
         let result = game.checkResult();
 
         if(result === "w") {
+
             xRound ? winner1 = true : winner2 = true;
             _started = false;
+
+            if(winner1)
+                game.incPlayer1Score();
+            else
+                game.incPlayer2Score();
+
             return [result, getCurrentPlayerName()];
         }
         else if(result === "t") {
@@ -271,6 +294,7 @@ const gameControl = (() => {
         player1RemainingMoves = 4 + Number(p1First);
         player2RemainingMoves = 4 + Number(!p1First);
 
+        game.resetPlayerScores();
         gameBoard.reset(p1First);
 
     };
@@ -297,6 +321,8 @@ const gameControl = (() => {
         getPlayer1Name,
         setPlayer2Name,
         getPlayer2Name,
+        getPlayer1Score,
+        getPlayer2Score,
         getCurrentPlayerName,
         getCurrentPlayerMark,
         started,
@@ -318,13 +344,17 @@ const gameInterface = (() => {
 
     const display = document.querySelector(".display");
 
+    const p1Container = document.getElementById("p1-container");
     const p1Name = document.getElementById("p1-name");
     const p1NameInput = document.getElementById("p1-name-input");
     const p1NameBtn = document.getElementById("p1-name-btn");
+    const p1Score = document.getElementById("p1-score");
 
+    const p2Container = document.getElementById("p2-container");
     const p2Name = document.getElementById("p2-name");
     const p2NameInput = document.getElementById("p2-name-input");
     const p2NameBtn = document.getElementById("p2-name-btn");
+    const p2Score = document.getElementById("p2-score");
 
     const startBtn = document.querySelector(".start-btn");
     const resetBtn = document.querySelector(".reset-btn");
@@ -358,14 +388,27 @@ const gameInterface = (() => {
 
     const reset = () => {
         document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("marked"));
+        p1Container.replaceChildren(p1Name, p1NameInput.parentElement, p1Score);
+        p2Container.replaceChildren(p2Name, p2NameInput.parentElement, p2Score);
         gameControl.start();
         display.innerText = gameControl.getCurrentPlayerName() + "'s turn";
+    }
+
+    const updateScore = () => {
+        p1Score.innerText = "Score: " + gameControl.getPlayer1Score();
+        p2Score.innerText = "Score: " + gameControl.getPlayer2Score();
     }
 
     const newMove = (evt) => {
 
         const cell = evt.target;
         if(!cell.hasAttribute("marked") && !gameControl.finished()) {
+
+            if(p1NameInput.parentElement.checkVisibility()) {
+                updateScore();
+                p1Container.replaceChildren(p1Name, p1Score, p1NameInput.parentElement);
+                p2Container.replaceChildren(p2Name, p2Score, p2NameInput.parentElement);
+            }
 
             cell.setAttribute("marked", gameControl.getCurrentPlayerMark());
 
@@ -374,8 +417,10 @@ const gameInterface = (() => {
 
             let [result, winnerName] = gameControl.newMove(row, col);
 
-            if(result === "w")
+            if(result === "w") {
                 display.innerText = `${winnerName} WINS!`;
+                updateScore();
+            }
             else if(result === "t")
                 display.innerText = "A TIE!";
             else
