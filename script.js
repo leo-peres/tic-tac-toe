@@ -131,8 +131,8 @@ const gameBoard = (() => {
     const getMark = (row, col) => gameBoardArr[row-1][col-1].getMark();
 
     const reset = (xFirst) => {
-        xRemaining = 4 + (xFirst ? 1 : 0);
-        oRemaining = 4 + (xFirst ? 0 : 1);
+        xRemaining = 4 + Number(xFirst);
+        oRemaining = 4 + Number(!xFirst);
         gameBoardArr.forEach((row) => {row.forEach((cell) => {cell.clearMark();});});
         winCells.forEach((wcells) => wcells.reset());
     };
@@ -210,6 +210,7 @@ const gameControl = (() => {
     let p1First = true;
     let xRound = true;
 
+    let _started = true;
     let winner1, winner2, tie = false;
     winner1 = winner2 = false;
 
@@ -230,19 +231,22 @@ const gameControl = (() => {
     const getOtherPlayerMark = () => xRound ? game.getPlayer2Mark() : game.getPlayer1Mark();
     const getOtherPlayerRemainingMoves = () => xRound ? player2RemainingMoves : player1RemainingMoves;
 
+    const started = () => _started;
     const finished = () => winner1 || winner2 || tie;
 
     const newMove = (row, col) => {
 
-        game.makeMove(row, col, n_rounds%2 == 0);
+        game.makeMove(row, col, xRound);
         let result = game.checkResult();
 
         if(result === "w") {
             xRound ? winner1 = true : winner2 = true;
+            _started = false;
             return [result, getCurrentPlayerName()];
         }
         else if(result === "t") {
             tie = true;
+            _started = false;
             return [result, ""];
         }
 
@@ -257,9 +261,12 @@ const gameControl = (() => {
 
     const start = () => {
 
+        p1First = true;
+
         n_rounds = 0;
         xRound = p1First;
-        finished = false;
+        _started = true;
+        winner1 = winner2 = tie = false;
 
         player1RemainingMoves = 4 + Number(p1First);
         player2RemainingMoves = 4 + Number(!p1First);
@@ -268,9 +275,20 @@ const gameControl = (() => {
 
     };
 
-    const startNewRound = () => {
+    const startNewGame = () => {
+
         p1First = !p1First;
-        start();
+
+        n_rounds = 0;
+        xRound = p1First;
+        _started = true;
+        winner1 = winner2 = tie = false;
+
+        player1RemainingMoves = 4 + Number(p1First);
+        player2RemainingMoves = 4 + Number(!p1First);
+
+        gameBoard.reset(p1First);
+
     };
 
     return {
@@ -281,10 +299,11 @@ const gameControl = (() => {
         getPlayer2Name,
         getCurrentPlayerName,
         getCurrentPlayerMark,
+        started,
         finished,
         newMove,
         start,
-        startNewRound
+        startNewGame
 
     };
 
@@ -308,6 +327,7 @@ const gameInterface = (() => {
     const p2NameBtn = document.getElementById("p2-name-btn");
 
     const startBtn = document.querySelector(".start-btn");
+    const resetBtn = document.querySelector(".reset-btn");
 
     const changePlayerName = (evt) => {
 
@@ -328,9 +348,18 @@ const gameInterface = (() => {
 
     }
 
-    const startNewRound = () => {
+    const startNewGame = () => {
+        if(!gameControl.started()) {
+            document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("marked"));
+            gameControl.startNewGame();
+            display.innerText = gameControl.getCurrentPlayerName() + "'s turn";
+        }
+    }
+
+    const reset = () => {
         document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("marked"));
-        gameControl.startNewRound();
+        gameControl.start();
+        display.innerText = gameControl.getCurrentPlayerName() + "'s turn";
     }
 
     const newMove = (evt) => {
@@ -375,7 +404,8 @@ const gameInterface = (() => {
 
     display.innerText = gameControl.getCurrentPlayerName() + "'s turn";
 
-    startBtn.addEventListener("click", startNewRound);
+    startBtn.addEventListener("click", startNewGame);
+    resetBtn.addEventListener("click", reset);
 
 })();
 
