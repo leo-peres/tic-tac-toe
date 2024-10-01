@@ -96,7 +96,7 @@ body {
     background-color: var(--cerulean);
     font-size: 1.2rem;
     height: 24px;
-    width: 120px;
+    width: 144px;
     outline: none;
     padding-left: 12px;
     border: 0;
@@ -188,5 +188,5 @@ body {
     border-left: var(--border-size) solid var(--light-border);
     border-top: var(--border-size) solid var(--light-border);
     border-right: var(--border-size) solid var(--dark-border);
-    border-bottom: var(--border-size) solid var(--dark-border)
+    border-bottom: var(--border-size) solid var(--dark-border);
 }

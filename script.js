@@ -440,6 +440,20 @@ const gameInterface = (() => {
         }
     }
 
+    document.querySelectorAll(".name-input-field").forEach((e) => e.addEventListener("input", (evt) => {
+        
+        target = evt.target;
+
+        if(target.value.length > 12)
+            target.value = target.value.slice(0, -1);
+        else if(target.value.length > 0) {
+            let lastChar = target.value.at(-1);
+            if(!lastChar.match(/[0-9a-z]/i))
+                target.value = target.value.slice(0, -1);
+        }
+
+    }));
+
     p1NameBtn.addEventListener("click", changePlayerName);
     p2NameBtn.addEventListener("click", changePlayerName);
 
