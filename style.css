@@ -8,6 +8,8 @@
 
     --cross-path: url(./images/cross.svg);
     --circle-path: url(./images/circle.svg);
+    --green-cross-path: url(./images/cross-green.svg);
+    --green-circle-path: url(./images/circle-green.svg);
 
     --btn-width: 100px;
     --btn-height: 40px;
@@ -168,9 +170,19 @@ body {
     background-size: cover;
 }
 
+.cell[marked="X"].cell[win] {
+    background-image: var(--green-cross-path);
+    background-size: cover; 
+}
+
 .cell[marked="O"] {
     background-image: var(--circle-path);
     background-size: cover;
+}
+
+.cell[marked="O"].cell[win] {
+    background-image: var(--green-circle-path);
+    background-size: cover; 
 }
 
 .game-btn-container {

@@ -24,13 +24,15 @@ function cellFactory(row, col) {
 
 };
 
-function winningCellsFactory(cells) {
+function winningCellsFactory(cells, code) {
 
     let xWable = true;
     let oWable = true;
 
     let xW = false;
     let oW = false;
+
+    const getCode = () => code;
 
     const xWinnable = () => xWable;
     const oWinnable = () => oWable;
@@ -72,6 +74,7 @@ function winningCellsFactory(cells) {
 
     return {
 
+        getCode,
         xWinnable,
         oWinnable,
         xWin,
@@ -105,8 +108,10 @@ const gameBoard = (() => {
     const buildWinCells = () => {
 
         winCells.length = 0;
-        for(let i = 0; i < 2*(dim + 1); i++)
-            winCells.push(winningCellsFactory([]));
+        for(let i = 0; i < 2*(dim + 1); i++) {
+            let code = (i < dim && "r" + (i+1)) || (i < 2*dim && "c" + (i+1-dim)) || (i == 2*dim && "md") || "od";
+            winCells.push(winningCellsFactory([], code));
+        }
 
         for(let i = 1; i <= dim; i++) {
             for(let j = 1; j <= dim; j++) {
@@ -155,11 +160,18 @@ const gameBoard = (() => {
         return (checkWin() && "w") || (checkTie() && "t") || "";
     };
 
+    const getWinCode = () => {
+        if(checkWin())
+            return winCells.find((wcells) => wcells.xWin() || wcells.oWin()).getCode();
+        return "";
+    };
+
     return {
 
         setMark,
         getMark,
         checkResult,
+        getWinCode,
         reset,
         print
 
@@ -196,6 +208,8 @@ const game = (() => {
 
     const checkResult = () => gameBoard.checkResult();
 
+    const getWinCode = () => gameBoard.getWinCode();
+
     return {
 
         setPlayer1Name,
@@ -210,7 +224,8 @@ const game = (() => {
         incPlayer2Score,
         resetPlayerScores,
         makeMove,
-        checkResult
+        checkResult,
+        getWinCode
 
     };
 
@@ -282,6 +297,8 @@ const gameControl = (() => {
 
     };
 
+    const getWinCode = () => game.getWinCode();
+
     const start = () => {
 
         p1First = true;
@@ -328,6 +345,7 @@ const gameControl = (() => {
         started,
         finished,
         newMove,
+        getWinCode,
         start,
         startNewGame
 
@@ -388,9 +406,15 @@ const gameInterface = (() => {
 
     }
 
+    const paintWinningCells = (code) => {
+        console.log(code);
+        document.querySelectorAll(`.cell[code*=${code}]`).forEach((c) => c.setAttribute("win", ""));
+    }
+
     const startNewGame = () => {
         if(!gameControl.started()) {
             document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("marked"));
+            document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("win"));
             gameControl.startNewGame();
             updateScore();
             writeToDisplay("", gameControl.getCurrentPlayerName());
@@ -399,6 +423,7 @@ const gameInterface = (() => {
 
     const reset = () => {
         document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("marked"));
+        document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("win"));
         p1Container.replaceChildren(p1Name, p1NameInput.parentElement, p1Score);
         p2Container.replaceChildren(p2Name, p2NameInput.parentElement, p2Score);
         gameControl.start();
@@ -428,8 +453,10 @@ const gameInterface = (() => {
 
             let [result, winnerName] = gameControl.newMove(row, col);
 
-            if(result === "w")
+            if(result === "w") {
                 writeToDisplay("w", winnerName);
+                paintWinningCells(gameControl.getWinCode());
+            }
             else
                 writeToDisplay(result, gameControl.getCurrentPlayerName());
 
@@ -443,6 +470,10 @@ const gameInterface = (() => {
             cellBtn.classList.add("cell");
             cellBtn.setAttribute("row", i+1);
             cellBtn.setAttribute("col", j+1);
+            cellBtn.setAttribute("code", "r" + (i+1));
+            cellBtn.setAttribute("code", (cellBtn.getAttribute("code") || "") + " c" + (j+1));
+            if(i == j) cellBtn.setAttribute("code", (cellBtn.getAttribute("code") || "") + " md");
+            if(i == 3 - j - 1) cellBtn.setAttribute("code", (cellBtn.getAttribute("code") || "") + " od");
             cellBtn.addEventListener("click", newMove);
             gameBoardEl.appendChild(cellBtn);
         }
