@@ -359,6 +359,15 @@ const gameInterface = (() => {
     const startBtn = document.querySelector(".start-btn");
     const resetBtn = document.querySelector(".reset-btn");
 
+    const writeToDisplay = (code, name) => {
+        if(code == "w")
+            display.innerText = `${name} WINS!`;
+        else if(code == "t")
+            display.innerText = "A TIE!";
+        else
+            display.innerText = name + "'" + (name.at(-1).match(/[sS]/) ? "" : "s") + " turn";
+    }
+
     const changePlayerName = (evt) => {
 
         target = evt.target;
@@ -369,6 +378,7 @@ const gameInterface = (() => {
             if(p1) {
                 gameControl.setPlayer1Name(name);
                 p1Name.innerText = name;
+                writeToDisplay("", name);
             }
             else {
                 gameControl.setPlayer2Name(name);
@@ -383,7 +393,7 @@ const gameInterface = (() => {
             document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("marked"));
             gameControl.startNewGame();
             updateScore();
-            display.innerText = gameControl.getCurrentPlayerName() + "'s turn";
+            writeToDisplay("", gameControl.getCurrentPlayerName());
         }
     }
 
@@ -392,7 +402,7 @@ const gameInterface = (() => {
         p1Container.replaceChildren(p1Name, p1NameInput.parentElement, p1Score);
         p2Container.replaceChildren(p2Name, p2NameInput.parentElement, p2Score);
         gameControl.start();
-        display.innerText = gameControl.getCurrentPlayerName() + "'s turn";
+        writeToDisplay("", gameControl.getCurrentPlayerName());
     }
 
     const updateScore = () => {
@@ -419,11 +429,9 @@ const gameInterface = (() => {
             let [result, winnerName] = gameControl.newMove(row, col);
 
             if(result === "w")
-                display.innerText = `${winnerName} WINS!`;
-            else if(result === "t")
-                display.innerText = "A TIE!";
+                writeToDisplay("w", winnerName);
             else
-                display.innerText = gameControl.getCurrentPlayerName() + "'s turn";
+                writeToDisplay(result, gameControl.getCurrentPlayerName());
 
         }   
 
@@ -460,7 +468,7 @@ const gameInterface = (() => {
     gameControl.setPlayer1Name(p1Name.innerText);
     gameControl.setPlayer2Name(p2Name.innerText);
 
-    display.innerText = gameControl.getCurrentPlayerName() + "'s turn";
+    writeToDisplay("", gameControl.getCurrentPlayerName());
 
     startBtn.addEventListener("click", startNewGame);
     resetBtn.addEventListener("click", reset);

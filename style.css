@@ -80,6 +80,14 @@ body {
     font-size: 1.6rem;
 }
 
+#p1-name::after {
+    content: " (X)";
+}
+
+#p2-name::after {
+    content: " (O)";
+}
+
 .player-name-input {
     display: grid;
     grid-template-rows: repeat(3, 1fr);
