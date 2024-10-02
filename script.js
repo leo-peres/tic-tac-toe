@@ -1,3 +1,159 @@
+function cpuPlayerFactory(mark, type) {
+
+    const otherMark = mark === "X" ? "O" : "X";
+
+    const mayWin = (s, rem) => !s.includes(otherMark) && s.split('-').length - 1 <= rem;
+
+    const winner = (s, dim) => !s.includes(otherMark) && s.split(mark).length == dim;
+
+    const loser = (s, dim) => !s.includes(mark) && s.split(otherMark).length  == dim;
+
+    const investigate = (rcPair) => {
+
+        let [row, col] = rcPair;
+
+        const state = gameBoard.getState();
+
+        let dim = state[0].length;
+        let rem = mark === "X" ? state[dim] : state[dim+1];
+
+        let w = false;
+        let l = false;
+        let count = 0;
+
+        let s = "";
+        for(let j = 0; j < dim; j++)
+            s += state[row-1][j];
+        if(winner(s, dim)) w = true;
+        if(loser(s, dim)) l = true;
+        count += Number(mayWin(s, rem));
+
+        s = "";
+        for(let i = 0; i < dim; i++)
+            s += state[i][col-1];
+        if(winner(s, dim)) w = true;
+        if(loser(s, dim)) l = true;
+        count += Number(mayWin(s, rem));
+
+        if(row === col) {
+            s = "";
+            for(let k = 0; k < dim; k++)
+                s += state[k][k];
+            if(winner(s, dim)) w = true;
+            if(loser(s, dim)) l = true;
+            count += Number(mayWin(s, rem));
+        }
+
+        if(row === dim - col + 1) {
+            s = "";
+            for(let k = 0; k < dim; k++)
+                s += state[k][dim - k - 1];
+            if(winner(s, dim)) w = true;
+            if(loser(s, dim)) l = true;
+            count += Number(mayWin(s, rem));
+        }
+
+        return [w, l, count];
+
+    }
+
+    const emptyCells = () => {
+
+        const state = gameBoard.getState();
+
+        let dim = state[0].length;
+        
+        const empCells = [];
+        for(let i = 0; i < dim; i++) {
+            for(let j = 0; j < dim; j++) {
+                if(state[i][j] === "-") {
+                    empCells.push([i+1, j+1].concat(investigate([i+1, j+1])));
+                }
+            }
+        }
+        
+        return empCells;
+
+    };
+
+    const getMark = () => mark;
+
+    const easy = () => {
+
+        const empCells = emptyCells();
+        let nEmpty = empCells.length;
+
+        let r = Math.floor(nEmpty*Math.random());
+        let [row, col] = [empCells[r][0], empCells[r][1]]
+
+        return [row, col];
+
+    }
+
+    const medium = () => {
+
+        const empCells = emptyCells();
+        let nEmpty = empCells.length;
+
+        let row, col;
+        if(empCells.some((x) => x[2])) {
+            let e = empCells.find((x) => x[2]);
+            [row, col] = [e[0], e[1]];
+        }
+        else if(empCells.some((x) => x[3])) {
+            let e = empCells.find((x) => x[3]);
+            [row, col] = [e[0], e[1]];
+        }
+        else {
+            let r = Math.floor(nEmpty*Math.random());
+            [row, col] = [empCells[r][0], empCells[r][1]]
+        }
+
+        return [row, col];
+
+    }
+
+    const hard = () => {
+
+        const empCells = emptyCells();
+        let nEmpty = empCells.length;
+
+        let row, col;
+        if(empCells.some((x) => x[2])) {
+            let e = empCells.find((x) => x[2]);
+            [row, col] = [e[0], e[1]];
+        }
+        else if(empCells.some((x) => x[3])) {
+            let e = empCells.find((x) => x[3]);
+            [row, col] = [e[0], e[1]];
+        }
+        else if(empCells.reduce((max, e) => e[4] > max ? e[4] : max, -1) > 0) {
+            let max = empCells.reduce((max, x) => x[4] > max ? x[4] : max, -1);
+            let e = empCells.find((x) => x[4] == max);
+            [row, col] = [e[0], e[1]];
+        }
+        else {
+            let r = Math.floor(nEmpty*Math.random());
+            [row, col] = [empCells[r][0], empCells[r][1]]
+        }
+
+        return [row, col];
+
+    }
+
+    const getMove = (type === "e" && easy) || (type === "m" && medium) || hard;
+
+    return {
+
+        getMark,
+        getMove
+
+    };
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
 function cellFactory(row, col) {
 
     let mark = "-";
@@ -147,6 +303,13 @@ const gameBoard = (() => {
 
     const getDimension = () => dim;
 
+    const getState = () => {
+        const state = gameBoardArr.map((row) => row.reduce((v, c) => v + c.getMark(), ""));
+        state.push(xRemaining);
+        state.push(oRemaining);
+        return state;
+    }
+
     const reset = (xFirst) => {
         xRemaining = Math.floor((dim*dim)/2) + Number(xFirst);
         oRemaining = Math.floor((dim*dim)/2) + Number(!xFirst);
@@ -176,6 +339,7 @@ const gameBoard = (() => {
         getMark,
         setDimension,
         getDimension,
+        getState,
         checkResult,
         getWinCode,
         reset,
@@ -189,8 +353,8 @@ const game = (() => {
 
     let dim = 3;
 
-    const player1 = { name: "Joe", mark: "X", score: 0};
-    const player2 = { name: "Jack", mark: "O", score: 0};
+    const player1 = { name: "Joe", mark: "X", score: 0, cpu: null, isCPU: false};
+    const player2 = { name: "Jack", mark: "O", score: 0, cpu: cpuPlayerFactory("O", "h"), isCPU: true};
 
     const setPlayer1Name = (name) => {player1.name = name;};
     const getPlayer1Name = () => player1.name;
@@ -207,6 +371,9 @@ const game = (() => {
     const incPlayer1Score = () => {player1.score++;};
     const incPlayer2Score = () => {player2.score++;};
 
+    const p1CPU = () => player1.isCPU;
+    const p2CPU = () => player2.isCPU;
+
     const resetPlayerScores = () => {player1.score = player2.score = 0;};
 
     const setDimension = (newDim) => {
@@ -220,6 +387,8 @@ const game = (() => {
         mark = p1 ? player1.mark : player2.mark;
         gameBoard.setMark(row, col, mark);
     };
+
+    const getCPUMove = (p1) => p1 ? player1.cpu.getMove() : player2.cpu.getMove();
 
     const checkResult = () => gameBoard.checkResult();
 
@@ -237,10 +406,13 @@ const game = (() => {
         getPlayer2Score,
         incPlayer1Score,
         incPlayer2Score,
+        p1CPU,
+        p2CPU,
         resetPlayerScores,
         setDimension,
         getDimension,
         makeMove,
+        getCPUMove,
         checkResult,
         getWinCode
 
@@ -280,16 +452,12 @@ const gameControl = (() => {
     const getOtherPlayerMark = () => xRound ? game.getPlayer2Mark() : game.getPlayer1Mark();
     const getOtherPlayerRemainingMoves = () => xRound ? player2RemainingMoves : player1RemainingMoves;
 
+    const cpuRound = () => xRound ? game.p1CPU() : game.p2CPU()
+
     const setDimension = (dim) => {
-        if(_ready) {
-            game.setDimension(dim);
-            start();
-        }
-        else {
-            game.setDimension(dim);
-            startNewGame();
-        }
-    }
+        game.setDimension(dim);
+        setUpGame();
+    };
 
     const ready = () => _ready;
     const started = () => _started;
@@ -331,11 +499,11 @@ const gameControl = (() => {
 
     };
 
+    const getCPUMove = () => game.getCPUMove(xRound);
+
     const getWinCode = () => game.getWinCode();
 
-    const start = () => {
-
-        p1First = true;
+    const setUpGame = () => {
 
         n_rounds = 0;
         xRound = p1First;
@@ -347,27 +515,19 @@ const gameControl = (() => {
         player1RemainingMoves = Math.floor((dim*dim)/2) + Number(p1First);
         player2RemainingMoves = Math.floor((dim*dim)/2) + Number(!p1First);
 
-        game.resetPlayerScores();
         gameBoard.reset(p1First);
 
+    }
+
+    const start = () => {
+        p1First = true;
+        game.resetPlayerScores();
+        setUpGame();
     };
 
     const startNewGame = () => {
-
         p1First = !p1First;
-
-        n_rounds = 0;
-        xRound = p1First;
-        _ready = true;
-        _started = false;
-        winner1 = winner2 = tie = false;
-
-        let dim = game.getDimension();
-        player1RemainingMoves = Math.floor((dim*dim)/2) + Number(p1First);
-        player2RemainingMoves = Math.floor((dim*dim)/2) + Number(!p1First);
-
-        gameBoard.reset(p1First);
-
+        setUpGame();
     };
 
     return {
@@ -382,11 +542,13 @@ const gameControl = (() => {
         getCurrentPlayerMark,
         getOtherPlayerName,
         getOtherPlayerMark,
+        cpuRound,
         setDimension,
         ready,
         started,
         finished,
         newMove,
+        getCPUMove,
         getWinCode,
         start,
         startNewGame
@@ -396,9 +558,6 @@ const gameControl = (() => {
 })();
 
 const gameInterface = (() => {
-
-    //const crossPath = "url(./images/cross.svg)";
-    //const circlePath = "url(./images/circle.svg)";
 
     const body = document.querySelector("body");
 
@@ -457,7 +616,7 @@ const gameInterface = (() => {
     }
 
     const showCursor = () => {
-        if(!gameControl.finished()) {
+        if(!gameControl.finished() && !gameControl.cpuRound()) {
             document.getElementById(gameControl.getCurrentPlayerMark() + "cursor").style.display = "block";
             document.getElementById(gameControl.getOtherPlayerMark() + "cursor").style.display = "none";
             gameBoardEl.style.cursor = "none";
@@ -470,14 +629,11 @@ const gameInterface = (() => {
 
     const hideCursor = () => {document.querySelectorAll(".cursor-img").forEach((c) => {c.style.display = "none";});};
 
-    const startNewGame = () => {
-        if(!gameControl.ready()) {
-            document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("marked"));
-            document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("win"));
-            gameControl.startNewGame();
-            updateScore();
-            writeToDisplay("", gameControl.getCurrentPlayerName());
-        }
+    const cpuMove = () => {
+        setTimeout(() => {
+            let [row, col] = gameControl.getCPUMove();
+            newMove(row, col);
+        }, 300);
     }
 
     const reset = () => {
@@ -494,66 +650,119 @@ const gameInterface = (() => {
         p2Score.innerText = "Score: " + gameControl.getPlayer2Score();
     }
 
-    const newMove = (evt) => {
+    const markCell = (row, col, mark) => {
+        const cell = document.querySelector(`.cell[row="${row}"][col="${col}"]`);
+        cell.setAttribute("marked", mark);
+    }
 
-        const cell = evt.target;
-        if(!cell.hasAttribute("marked") && !gameControl.finished()) {
+    const newMove = (row, col) => {
 
-            if(p1NameInput.parentElement.checkVisibility()) {
-                updateScore();
-                p1Container.replaceChildren(p1Name, p1Score, p1NameInput.parentElement);
-                p2Container.replaceChildren(p2Name, p2Score, p2NameInput.parentElement);
-            }
+        markCell(row, col, gameControl.getCurrentPlayerMark());
 
-            cell.setAttribute("marked", gameControl.getCurrentPlayerMark());
+        let [result, winnerName] = gameControl.newMove(row, col);
 
-            let row = parseInt(cell.getAttribute("row"));
-            let col = parseInt(cell.getAttribute("col"));
+        if(result === "w") {
+            writeToDisplay("w", winnerName);
+            paintWinningCells(gameControl.getWinCode());
+        }
+        else
+            writeToDisplay(result, gameControl.getCurrentPlayerName());
 
-            let [result, winnerName] = gameControl.newMove(row, col);
+        showCursor();
 
-            if(result === "w") {
-                writeToDisplay("w", winnerName);
-                paintWinningCells(gameControl.getWinCode());
-            }
-            else
-                writeToDisplay(result, gameControl.getCurrentPlayerName());
-
-            showCursor();
-
-        }   
+        if(gameControl.cpuRound() && !gameControl.finished())
+            cpuMove();
 
     }
 
-    const buildBoard = (dim) => {
+    const buildBoard = () => {
+
         gameBoardEl.innerText = "";
         gameBoardEl.style.setProperty("--dim", dim);
         for(let i = 0; i < dim; i++) {
             for(let j = 0; j < dim; j++) {
+
                 const cellBtn = document.createElement("button");
                 cellBtn.classList.add("cell");
+
                 cellBtn.setAttribute("row", i+1);
                 cellBtn.setAttribute("col", j+1);
                 cellBtn.setAttribute("code", "r" + (i+1));
                 cellBtn.setAttribute("code", (cellBtn.getAttribute("code") || "") + " c" + (j+1));
                 if(i == j) cellBtn.setAttribute("code", (cellBtn.getAttribute("code") || "") + " md");
                 if(i == dim - j - 1) cellBtn.setAttribute("code", (cellBtn.getAttribute("code") || "") + " od");
-                cellBtn.addEventListener("click", newMove);
+
+                cellBtn.addEventListener("click", (evt) => {
+
+                    const cell = evt.target;
+                    if(!cell.hasAttribute("marked") && !gameControl.finished() && !gameControl.cpuRound()) {
+            
+                        if(p1NameInput.parentElement.checkVisibility()) {
+                            updateScore();
+                            p1Container.replaceChildren(p1Name, p1Score, p1NameInput.parentElement);
+                            p2Container.replaceChildren(p2Name, p2Score, p2NameInput.parentElement);
+                        }
+            
+                        let row = parseInt(cell.getAttribute("row"));
+                        let col = parseInt(cell.getAttribute("col"));
+
+                        newMove(row, col)
+
+                        }
+
+                    });
+
                 gameBoardEl.appendChild(cellBtn);
+
             }
-        }        
+        } 
+
     }
 
-    const changeDimension = (dim) => {
-        if(!gameControl.started()) {
-            gameControl.setDimension(dim);
-            buildBoard(dim);
-            document.querySelectorAll(".cursor-img").forEach((e) => {
-                e.setAttribute("width", 315/dim);
-                e.setAttribute("height", 315/dim);
-            });
+    const changeDimension = (newDim) => {
+
+        dim = newDim;
+
+        gameControl.setDimension(dim);
+        buildBoard();
+
+        document.querySelectorAll(".cursor-img").forEach((e) => {
+            e.setAttribute("width", 315/dim);
+            e.setAttribute("height", 315/dim);
+        });
+
+        if(!gameControl.ready()) {
+            //gameControl.setDimension(dim);
+            //buildBoard();
+            startNewGame();
         }
+        else {
+            //gameControl.setDimension(dim);
+            //buildBoard()
+            //start();
+        }
+
     }
+
+
+    const start = () => {
+        buildBoard();
+        gameControl.start();
+    }
+
+    const startNewGame = () => {
+        if(!gameControl.ready()) {
+            document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("marked"));
+            document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("win"));
+            gameControl.startNewGame();
+            updateScore();
+            writeToDisplay("", gameControl.getCurrentPlayerName());
+        }
+        else if(!gameControl.started())
+            cpuMove();
+    }
+
+    /////////////////////////^ TOTAL CODE MESS v//////////////////////////
 
     document.querySelectorAll(".name-input-field").forEach((e) => e.addEventListener("input", (evt) => {
         
@@ -605,10 +814,14 @@ const gameInterface = (() => {
 
     document.querySelector(".tpd-cancel-btn").addEventListener("click", () => {
         document.querySelector(".type-player-dialog").close();
-    })
+    });
 
-    buildBoard(3);
+    return {
+
+        start
+
+    }
 
 })();
 
-gameControl.start();
+gameInterface.start();
