@@ -138,7 +138,8 @@ body {
     /*width: 480px;
     height: 480px;
     margin: 120px auto 0;*/
-    cursor: url(./images/cross.svg), auto;
+    /*cursor: url(./images/cross.svg), auto;*/
+    cursor: none;
 
     grid-row: 2;
     grid-column: 2;
@@ -163,6 +164,7 @@ body {
     height: 100%;
     padding: 0;
     border: 0;
+    background-image: url("./images/empty.svg");
 }
 
 .cell[marked="X"] {
@@ -210,3 +212,10 @@ body {
     border-right: var(--border-size) solid var(--dark-border);
     border-bottom: var(--border-size) solid var(--dark-border);
 }
+
+.cursor-img {
+    position: absolute;
+    pointer-events: none;
+    display: none;
+}
+

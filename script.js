@@ -181,8 +181,8 @@ const gameBoard = (() => {
 
 const game = (() => {
 
-    let player1 = { name: "Joe", mark: "X", score: 0};
-    let player2 = { name: "Jack", mark: "O", score: 0};
+    const player1 = { name: "Joe", mark: "X", score: 0};
+    const player2 = { name: "Jack", mark: "O", score: 0};
 
     const setPlayer1Name = (name) => {player1.name = name;};
     const getPlayer1Name = () => player1.name;
@@ -342,6 +342,8 @@ const gameControl = (() => {
         getPlayer2Score,
         getCurrentPlayerName,
         getCurrentPlayerMark,
+        getOtherPlayerName,
+        getOtherPlayerMark,
         started,
         finished,
         newMove,
@@ -407,9 +409,22 @@ const gameInterface = (() => {
     }
 
     const paintWinningCells = (code) => {
-        console.log(code);
         document.querySelectorAll(`.cell[code*=${code}]`).forEach((c) => c.setAttribute("win", ""));
     }
+
+    const showCursor = () => {
+        if(!gameControl.finished()) {
+            document.getElementById(gameControl.getCurrentPlayerMark() + "cursor").style.display = "block";
+            document.getElementById(gameControl.getOtherPlayerMark() + "cursor").style.display = "none";
+            gameBoardEl.style.cursor = "none";
+        }
+        else {
+            hideCursor(); //hide custom cursors
+            gameBoardEl.style.cursor = "auto";
+        }
+    }
+
+    const hideCursor = () => {document.querySelectorAll(".cursor-img").forEach((c) => {c.style.display = "none";});};
 
     const startNewGame = () => {
         if(!gameControl.started()) {
@@ -460,6 +475,8 @@ const gameInterface = (() => {
             else
                 writeToDisplay(result, gameControl.getCurrentPlayerName());
 
+            showCursor();
+
         }   
 
     }
@@ -503,6 +520,15 @@ const gameInterface = (() => {
 
     startBtn.addEventListener("click", startNewGame);
     resetBtn.addEventListener("click", reset);
+
+    gameBoardEl.addEventListener("mouseenter", () => {showCursor();});
+    gameBoardEl.addEventListener("mouseleave", () => {hideCursor()});
+    gameBoardEl.addEventListener("mousemove", (evt) => {
+        cursors = document.querySelectorAll(".cursor-img");
+        cursors.forEach((c) => {c.style.left = evt.x - 64});
+        cursors.forEach((c) => {c.style.top = evt.y - 64});
+        showCursor();
+    });
 
 })();
 
