@@ -95,15 +95,9 @@ const gameBoard = (() => {
     let oRemaining = 4;
 
     const gameBoardArr = [];
-    for(let i = 0; i < dim; i++) {
-        gameBoardArr.push([]);
-        for(let j = 0; j < dim; j++)
-            gameBoardArr[i].push(cellFactory(i + 1, j + 1));
-    }
+    const winCells = [];
 
     const getCell = (row, col) => gameBoardArr[row-1][col-1];
-
-    const winCells = [];
 
     const buildWinCells = () => {
 
@@ -124,7 +118,18 @@ const gameBoard = (() => {
 
     };
 
-    buildWinCells();
+    const buildBoard = () => {
+
+        gameBoardArr.length = 0;
+        for(let i = 0; i < dim; i++) {
+            gameBoardArr.push([]);
+            for(let j = 0; j < dim; j++)
+                gameBoardArr[i].push(cellFactory(i + 1, j + 1));
+        }
+
+        buildWinCells();
+
+    };
 
     const nEmptyCells = () => xRemaining + oRemaining;
 
@@ -135,21 +140,18 @@ const gameBoard = (() => {
 
     const getMark = (row, col) => gameBoardArr[row-1][col-1].getMark();
 
-    const reset = (xFirst) => {
-        xRemaining = 4 + Number(xFirst);
-        oRemaining = 4 + Number(!xFirst);
-        gameBoardArr.forEach((row) => {row.forEach((cell) => {cell.clearMark();});});
-        winCells.forEach((wcells) => wcells.reset());
+    const setDimension = (newDim) => {
+        dim = newDim;
+        buildBoard();
     };
 
-    const print = () => {
+    const getDimension = () => dim;
 
-        let row1 = getMark(1, 1) + getMark(1, 2) + getMark(1, 3) + "\n";
-        let row2 = getMark(2, 1) + getMark(2, 2) + getMark(2, 3) + "\n";
-        let row3 = getMark(3, 1) + getMark(3, 2) + getMark(3, 3);
-
-        console.log(row1 + row2 + row3);
-
+    const reset = (xFirst) => {
+        xRemaining = Math.floor((dim*dim)/2) + Number(xFirst);
+        oRemaining = Math.floor((dim*dim)/2) + Number(!xFirst);
+        gameBoardArr.forEach((row) => {row.forEach((cell) => {cell.clearMark();});});
+        winCells.forEach((wcells) => wcells.reset());
     };
 
     const checkWin = () => winCells.some((wcells) => wcells.xWin() || wcells.oWin());
@@ -166,10 +168,14 @@ const gameBoard = (() => {
         return "";
     };
 
+    buildBoard();
+
     return {
 
         setMark,
         getMark,
+        setDimension,
+        getDimension,
         checkResult,
         getWinCode,
         reset,
@@ -180,6 +186,8 @@ const gameBoard = (() => {
 })();
 
 const game = (() => {
+
+    let dim = 3;
 
     const player1 = { name: "Joe", mark: "X", score: 0};
     const player2 = { name: "Jack", mark: "O", score: 0};
@@ -200,6 +208,13 @@ const game = (() => {
     const incPlayer2Score = () => {player2.score++;};
 
     const resetPlayerScores = () => {player1.score = player2.score = 0;};
+
+    const setDimension = (newDim) => {
+        dim = newDim;
+        gameBoard.setDimension(newDim);
+    }
+
+    const getDimension = () => dim;
 
     const makeMove = (row, col, p1) => {
         mark = p1 ? player1.mark : player2.mark;
@@ -223,6 +238,8 @@ const game = (() => {
         incPlayer1Score,
         incPlayer2Score,
         resetPlayerScores,
+        setDimension,
+        getDimension,
         makeMove,
         checkResult,
         getWinCode
@@ -238,7 +255,8 @@ const gameControl = (() => {
     let p1First = true;
     let xRound = true;
 
-    let _started = true;
+    let _ready = true;
+    let _started = false;
     let winner1, winner2, tie = false;
     winner1 = winner2 = false;
 
@@ -262,10 +280,24 @@ const gameControl = (() => {
     const getOtherPlayerMark = () => xRound ? game.getPlayer2Mark() : game.getPlayer1Mark();
     const getOtherPlayerRemainingMoves = () => xRound ? player2RemainingMoves : player1RemainingMoves;
 
+    const setDimension = (dim) => {
+        if(_ready) {
+            game.setDimension(dim);
+            start();
+        }
+        else {
+            game.setDimension(dim);
+            startNewGame();
+        }
+    }
+
+    const ready = () => _ready;
     const started = () => _started;
     const finished = () => winner1 || winner2 || tie;
 
     const newMove = (row, col) => {
+
+        _started = true;
 
         game.makeMove(row, col, xRound);
         let result = game.checkResult();
@@ -273,6 +305,7 @@ const gameControl = (() => {
         if(result === "w") {
 
             xRound ? winner1 = true : winner2 = true;
+            _ready = false;
             _started = false;
 
             if(winner1)
@@ -284,6 +317,7 @@ const gameControl = (() => {
         }
         else if(result === "t") {
             tie = true;
+            _ready = false;
             _started = false;
             return [result, ""];
         }
@@ -305,11 +339,13 @@ const gameControl = (() => {
 
         n_rounds = 0;
         xRound = p1First;
-        _started = true;
+        _ready = true;
+        _started = false;
         winner1 = winner2 = tie = false;
 
-        player1RemainingMoves = 4 + Number(p1First);
-        player2RemainingMoves = 4 + Number(!p1First);
+        let dim = game.getDimension();
+        player1RemainingMoves = Math.floor((dim*dim)/2) + Number(p1First);
+        player2RemainingMoves = Math.floor((dim*dim)/2) + Number(!p1First);
 
         game.resetPlayerScores();
         gameBoard.reset(p1First);
@@ -322,11 +358,13 @@ const gameControl = (() => {
 
         n_rounds = 0;
         xRound = p1First;
-        _started = true;
+        _ready = true;
+        _started = false;
         winner1 = winner2 = tie = false;
 
-        player1RemainingMoves = 4 + Number(p1First);
-        player2RemainingMoves = 4 + Number(!p1First);
+        let dim = game.getDimension();
+        player1RemainingMoves = Math.floor((dim*dim)/2) + Number(p1First);
+        player2RemainingMoves = Math.floor((dim*dim)/2) + Number(!p1First);
 
         gameBoard.reset(p1First);
 
@@ -344,6 +382,8 @@ const gameControl = (() => {
         getCurrentPlayerMark,
         getOtherPlayerName,
         getOtherPlayerMark,
+        setDimension,
+        ready,
         started,
         finished,
         newMove,
@@ -378,6 +418,8 @@ const gameInterface = (() => {
 
     const startBtn = document.querySelector(".start-btn");
     const resetBtn = document.querySelector(".reset-btn");
+
+    let dim = 3;
 
     const writeToDisplay = (code, name) => {
         if(code == "w")
@@ -427,7 +469,7 @@ const gameInterface = (() => {
     const hideCursor = () => {document.querySelectorAll(".cursor-img").forEach((c) => {c.style.display = "none";});};
 
     const startNewGame = () => {
-        if(!gameControl.started()) {
+        if(!gameControl.ready()) {
             document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("marked"));
             document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("win"));
             gameControl.startNewGame();
@@ -481,18 +523,33 @@ const gameInterface = (() => {
 
     }
 
-    for(let i = 0; i < 3; i++) {
-        for(let j = 0; j < 3; j++) {
-            const cellBtn = document.createElement("button");
-            cellBtn.classList.add("cell");
-            cellBtn.setAttribute("row", i+1);
-            cellBtn.setAttribute("col", j+1);
-            cellBtn.setAttribute("code", "r" + (i+1));
-            cellBtn.setAttribute("code", (cellBtn.getAttribute("code") || "") + " c" + (j+1));
-            if(i == j) cellBtn.setAttribute("code", (cellBtn.getAttribute("code") || "") + " md");
-            if(i == 3 - j - 1) cellBtn.setAttribute("code", (cellBtn.getAttribute("code") || "") + " od");
-            cellBtn.addEventListener("click", newMove);
-            gameBoardEl.appendChild(cellBtn);
+    const buildBoard = (dim) => {
+        gameBoardEl.innerText = "";
+        gameBoardEl.style.setProperty("--dim", dim);
+        for(let i = 0; i < dim; i++) {
+            for(let j = 0; j < dim; j++) {
+                const cellBtn = document.createElement("button");
+                cellBtn.classList.add("cell");
+                cellBtn.setAttribute("row", i+1);
+                cellBtn.setAttribute("col", j+1);
+                cellBtn.setAttribute("code", "r" + (i+1));
+                cellBtn.setAttribute("code", (cellBtn.getAttribute("code") || "") + " c" + (j+1));
+                if(i == j) cellBtn.setAttribute("code", (cellBtn.getAttribute("code") || "") + " md");
+                if(i == dim - j - 1) cellBtn.setAttribute("code", (cellBtn.getAttribute("code") || "") + " od");
+                cellBtn.addEventListener("click", newMove);
+                gameBoardEl.appendChild(cellBtn);
+            }
+        }        
+    }
+
+    const changeDimension = (dim) => {
+        if(!gameControl.started()) {
+            gameControl.setDimension(dim);
+            buildBoard(dim);
+            document.querySelectorAll(".cursor-img").forEach((e) => {
+                e.setAttribute("width", 315/dim);
+                e.setAttribute("height", 315/dim);
+            });
         }
     }
 
@@ -525,10 +582,20 @@ const gameInterface = (() => {
     gameBoardEl.addEventListener("mouseleave", () => {hideCursor()});
     gameBoardEl.addEventListener("mousemove", (evt) => {
         cursors = document.querySelectorAll(".cursor-img");
-        cursors.forEach((c) => {c.style.left = evt.x - 64});
-        cursors.forEach((c) => {c.style.top = evt.y - 64});
+        let w = parseFloat(cursors[0].getAttribute("width"));
+        cursors.forEach((c) => {c.style.left = evt.x - w/2});
+        cursors.forEach((c) => {c.style.top = evt.y - w/2});
         showCursor();
     });
+
+    document.querySelectorAll(".dim-btn").forEach((btn) => {
+        btn.addEventListener("click", (evt) => {
+            let dim = parseInt(evt.target.getAttribute("dim"));
+            changeDimension(dim);
+        });
+    });
+
+    buildBoard(3);
 
 })();
 
