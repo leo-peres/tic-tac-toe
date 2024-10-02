@@ -58,6 +58,24 @@ body {
     font-weight: bold;
 }
 
+.game-options button {
+    color: #fafafa;
+    background-color: var(--red);
+    font-weight: inherit;
+    padding: 0;
+    cursor: pointer;
+
+    --light-border: #ff5941;
+    --dark-border: #c80000;
+    --border-size: 4px;
+
+    border-left: var(--border-size) solid var(--light-border);
+    border-top: var(--border-size) solid var(--light-border);
+    border-right: var(--border-size) solid var(--dark-border);
+    border-bottom: var(--border-size) solid var(--dark-border)
+}
+
+
 .player-options {
     grid-row: 2;
     grid-column: 1;
@@ -73,23 +91,28 @@ body {
 }
 
 .player-container > * {
-    margin: auto 60px auto 24px;
+    margin: auto 52px auto 24px;
 }
 
 .player-container > div:last-child {
     visibility: hidden;
 }
 
-.player-name,
+.player-btn,
 .player-score {
-    font-size: 1.6rem;
+    font-size: 1.2rem;
 }
 
-#p1-name::after {
+.player-btn {
+    width: 200px;
+    height: 48px;
+}
+
+#p1-btn::after {
     content: " (X)";
 }
 
-#p2-name::after {
+#p2-btn::after {
     content: " (O)";
 }
 
@@ -117,23 +140,9 @@ body {
 }
 
 .player-name-input button {
-    color: #fafafa;
-    background-color: var(--red);
-    font-weight: inherit;
     width: 36px;
     height: 28px;
-    /*border: 0;*/
-    padding: 0;
     margin: 4px 0px 0px 4px;
-
-    --light-border: #ff5941;
-    --dark-border: #c80000;
-    --border-size: 4px;
-
-    border-left: var(--border-size) solid var(--light-border);
-    border-top: var(--border-size) solid var(--light-border);
-    border-right: var(--border-size) solid var(--dark-border);
-    border-bottom: var(--border-size) solid var(--dark-border)
 }
 
 .gameboard {
@@ -227,7 +236,7 @@ body {
 }
 
 .dim-chooser > * {
-    margin: auto 24px auto 60px;
+    margin: auto 24px auto 52px;
 }
 
 .dim-chooser h1 {
@@ -239,21 +248,8 @@ body {
 }
 
 .dim-btn {
-    color: #fafafa;
-    background-color: #ff664b;
-    font-weight: bold;
     width: 128px;
     height: 64px;
-    border: none;
-    cursor: pointer;
-}
-
-.dim-btn:hover {
-    background-color: #ff8664;
-}
-
-.dim-btn:active {
-    background-color: #ff795a;
 }
 
 .cursor-img {
@@ -262,3 +258,45 @@ body {
     display: none;
 }
 
+.type-player-dialog {
+    background-color: var(--red);
+}
+
+.type-player-chooser{
+    width: 240px;
+    height: 300px;
+
+    display: grid;
+    grid-template-rows: repeat(5, 1fr);
+}
+
+.type-player-opt {
+    color: #fafafa;
+    font-weight: bold;
+    background-color: #ff5941;
+    border: 0;
+    cursor: pointer;
+}
+
+.type-player-opt:hover {
+    background-color: #ff8c69;
+}
+
+.tpd-cancel-btn {
+    color: #fafafa;
+    font-weight: bold;
+    background-color: #c80000;
+    width: 120px;
+    height: 48px;
+    margin: auto;
+    cursor: pointer;
+
+    --light-border: #fc4929;
+    --dark-border: #960000;
+    --border-size: 4px;
+
+    border-left: var(--border-size) solid var(--light-border);
+    border-top: var(--border-size) solid var(--light-border);
+    border-right: var(--border-size) solid var(--dark-border);
+    border-bottom: var(--border-size) solid var(--dark-border)
+}

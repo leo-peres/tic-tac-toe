@@ -400,18 +400,20 @@ const gameInterface = (() => {
     //const crossPath = "url(./images/cross.svg)";
     //const circlePath = "url(./images/circle.svg)";
 
+    const body = document.querySelector("body");
+
     const gameBoardEl = document.querySelector(".gameboard");
 
     const display = document.querySelector(".display");
 
     const p1Container = document.getElementById("p1-container");
-    const p1Name = document.getElementById("p1-name");
+    const p1Name = document.getElementById("p1-btn");
     const p1NameInput = document.getElementById("p1-name-input");
     const p1NameBtn = document.getElementById("p1-name-btn");
     const p1Score = document.getElementById("p1-score");
 
     const p2Container = document.getElementById("p2-container");
-    const p2Name = document.getElementById("p2-name");
+    const p2Name = document.getElementById("p2-btn");
     const p2NameInput = document.getElementById("p2-name-input");
     const p2NameBtn = document.getElementById("p2-name-btn");
     const p2Score = document.getElementById("p2-score");
@@ -580,12 +582,12 @@ const gameInterface = (() => {
 
     gameBoardEl.addEventListener("mouseenter", () => {showCursor();});
     gameBoardEl.addEventListener("mouseleave", () => {hideCursor()});
-    gameBoardEl.addEventListener("mousemove", (evt) => {
+    body.addEventListener("mousemove", (evt) => {
         cursors = document.querySelectorAll(".cursor-img");
         let w = parseFloat(cursors[0].getAttribute("width"));
         cursors.forEach((c) => {c.style.left = evt.x - w/2});
         cursors.forEach((c) => {c.style.top = evt.y - w/2});
-        showCursor();
+        //showCursor();
     });
 
     document.querySelectorAll(".dim-btn").forEach((btn) => {
@@ -594,6 +596,16 @@ const gameInterface = (() => {
             changeDimension(dim);
         });
     });
+
+    document.querySelectorAll(".player-btn").forEach((e) => {
+        e.addEventListener("click", (evt) => {
+            document.querySelector(".type-player-dialog").showModal();
+        })
+    });
+
+    document.querySelector(".tpd-cancel-btn").addEventListener("click", () => {
+        document.querySelector(".type-player-dialog").close();
+    })
 
     buildBoard(3);
 
