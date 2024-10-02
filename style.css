@@ -53,6 +53,11 @@ body {
     grid-column: 2;
 }
 
+.game-options {
+    color: var(--red);
+    font-weight: bold;
+}
+
 .player-options {
     grid-row: 2;
     grid-column: 1;
@@ -62,15 +67,13 @@ body {
 }
 
 .player-container {
-    color: var(--red);
-    font-weight: bold;
 
     display: grid;
     grid-template-rows: 48px 48px 1fr;
 }
 
 .player-container > * {
-    margin:auto 24px;
+    margin: auto 60px auto 24px;
 }
 
 .player-container > div:last-child {
@@ -211,6 +214,44 @@ body {
     border-top: var(--border-size) solid var(--light-border);
     border-right: var(--border-size) solid var(--dark-border);
     border-bottom: var(--border-size) solid var(--dark-border);
+}
+
+.dim-chooser {
+    grid-row: 2;
+    grid-column: 3;
+
+    display: grid;
+    grid-template-rows: 48px repeat(3, 1fr);
+}
+
+.dim-chooser > * {
+    margin: auto 24px auto 60px;
+}
+
+.dim-chooser h1 {
+    font-size: 1.6rem;
+}
+
+.dim-option {
+    margin: auto;
+}
+
+.dim-btn {
+    color: #fafafa;
+    background-color: #ff664b;
+    font-weight: bold;
+    width: 128px;
+    height: 64px;
+    border: none;
+    cursor: pointer;
+}
+
+.dim-btn:hover {
+    background-color: #ff8664;
+}
+
+.dim-btn:active {
+    background-color: #ff795a;
 }
 
 .cursor-img {
