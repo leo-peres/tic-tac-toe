@@ -361,7 +361,7 @@ const game = (() => {
     let dim = 3;
 
     const player1 = { name: "Joe", mark: "X", score: 0, cpu: null, isCPU: false};
-    const player2 = { name: "Jack", mark: "O", score: 0, cpu: cpuPlayerFactory("O", "h"), isCPU: true};
+    const player2 = { name: "Jack", mark: "O", score: 0, cpu: null, isCPU: false};
 
     const setPlayer1Name = (name) => {player1.name = name;};
     const getPlayer1Name = () => player1.name;
@@ -377,6 +377,16 @@ const game = (() => {
 
     const incPlayer1Score = () => {player1.score++;};
     const incPlayer2Score = () => {player2.score++;};
+
+    const changeP1Type = (type) => {
+        player1.cpu = type === "p" ? null : cpuPlayerFactory("X", type);
+        player1.isCPU = !(type === "p");
+    }
+
+    const changeP2Type = (type) => {
+        player2.cpu = type === "p" ? null : cpuPlayerFactory("O", type);
+        player2.isCPU = !(type === "p");
+    }
 
     const p1CPU = () => player1.isCPU;
     const p2CPU = () => player2.isCPU;
@@ -413,6 +423,8 @@ const game = (() => {
         getPlayer2Score,
         incPlayer1Score,
         incPlayer2Score,
+        changeP1Type,
+        changeP2Type,
         p1CPU,
         p2CPU,
         resetPlayerScores,
@@ -465,6 +477,13 @@ const gameControl = (() => {
         game.setDimension(dim);
         setUpGame();
     };
+
+    const changePlayerType = (type, p1) => {
+        if(p1)
+            game.changeP1Type(type);
+        else
+            game.changeP2Type(type);
+    }
 
     const ready = () => _ready;
     const started = () => _started;
@@ -551,6 +570,7 @@ const gameControl = (() => {
         getOtherPlayerMark,
         cpuRound,
         setDimension,
+        changePlayerType,
         ready,
         started,
         finished,
@@ -751,6 +771,14 @@ const gameInterface = (() => {
 
     }
 
+    const changePlayerType = (type, p1) => {
+        type = (type === "human" && "p") ||
+               (type === "cpu-easy" && "e") ||
+               (type === "cpu-medium" && "m") ||
+               (type === "cpu-hard" && "h");
+        gameControl.changePlayerType(type, p1);
+    }
+
 
     const start = () => {
         buildBoard();
@@ -815,7 +843,19 @@ const gameInterface = (() => {
 
     document.querySelectorAll(".player-btn").forEach((e) => {
         e.addEventListener("click", (evt) => {
+            let dialog = document.querySelector(".type-player-dialog");
+            dialog.setAttribute(evt.target.id.includes("p1") ? "p1" : "p2", "");
+            dialog.removeAttribute(evt.target.id.includes("p1") ? "p2" : "p1", "");
             document.querySelector(".type-player-dialog").showModal();
+        })
+    });
+
+    document.querySelectorAll(".type-player-opt").forEach((e) => {
+        e.addEventListener("click", (evt) => {
+            let ptype = evt.target.getAttribute("ptype");
+            let dialog = document.querySelector(".type-player-dialog");
+            changePlayerType(ptype, dialog.hasAttribute("p1"));
+            dialog.close();
         })
     });
 
