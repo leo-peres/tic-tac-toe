@@ -441,13 +441,14 @@ const game = (() => {
 
 const gameControl = (() => {
 
-    let n_rounds = 0;
+    let n_moves = 0;
 
     let p1First = true;
-    let xRound = true;
+    let xMove = true;
 
-    let _ready = true;
-    let _started = false;
+    let roundReady = true;
+    let _gameStarted = false;
+    let _roundStarted = false;
     let winner1, winner2, tie = false;
     winner1 = winner2 = false;
 
@@ -463,19 +464,19 @@ const gameControl = (() => {
     const getPlayer1Score = () => game.getPlayer1Score();
     const getPlayer2Score = () => game.getPlayer2Score();
 
-    const getCurrentPlayerName = () => xRound ? game.getPlayer1Name() : game.getPlayer2Name();
-    const getCurrentPlayerMark = () => xRound ? game.getPlayer1Mark() : game.getPlayer2Mark();
-    const getCurrentPlayerRemainingMoves = () => xRound ? player1RemainingMoves : player2RemainingMoves;
+    const getCurrentPlayerName = () => xMove ? game.getPlayer1Name() : game.getPlayer2Name();
+    const getCurrentPlayerMark = () => xMove ? game.getPlayer1Mark() : game.getPlayer2Mark();
+    const getCurrentPlayerRemainingMoves = () => xMove ? player1RemainingMoves : player2RemainingMoves;
 
-    const getOtherPlayerName = () => xRound ? game.getPlayer2Name() : game.getPlayer1Name();
-    const getOtherPlayerMark = () => xRound ? game.getPlayer2Mark() : game.getPlayer1Mark();
-    const getOtherPlayerRemainingMoves = () => xRound ? player2RemainingMoves : player1RemainingMoves;
+    const getOtherPlayerName = () => xMove ? game.getPlayer2Name() : game.getPlayer1Name();
+    const getOtherPlayerMark = () => xMove ? game.getPlayer2Mark() : game.getPlayer1Mark();
+    const getOtherPlayerRemainingMoves = () => xMove ? player2RemainingMoves : player1RemainingMoves;
 
-    const cpuRound = () => xRound ? game.p1CPU() : game.p2CPU()
+    const cpuMove = () => xMove ? game.p1CPU() : game.p2CPU()
 
     const setDimension = (dim) => {
         game.setDimension(dim);
-        setUpGame();
+        setUpRound();
     };
 
     const changePlayerType = (type, p1) => {
@@ -485,22 +486,23 @@ const gameControl = (() => {
             game.changeP2Type(type);
     }
 
-    const ready = () => _ready;
-    const started = () => _started;
+    const ready = () => roundReady;
+    const gameStarted = () => _gameStarted;
+    const roundStarted = () => _roundStarted;
     const finished = () => winner1 || winner2 || tie;
 
     const newMove = (row, col) => {
 
-        _started = true;
+        _gameStarted = _roundStarted = true;
 
-        game.makeMove(row, col, xRound);
+        game.makeMove(row, col, xMove);
         let result = game.checkResult();
 
         if(result === "w") {
 
-            xRound ? winner1 = true : winner2 = true;
-            _ready = false;
-            _started = false;
+            xMove ? winner1 = true : winner2 = true;
+            roundReady = false;
+            _roundStarted = false;
 
             if(winner1)
                 game.incPlayer1Score();
@@ -511,30 +513,30 @@ const gameControl = (() => {
         }
         else if(result === "t") {
             tie = true;
-            _ready = false;
-            _started = false;
+            roundReady = false;
+            _roundStarted = false;
             return [result, ""];
         }
 
-        n_rounds++;
-        xRound ? player1RemainingMoves-- : player2RemainingMoves--;
+        n_moves++;
+        xMove ? player1RemainingMoves-- : player2RemainingMoves--;
 
-        xRound = !xRound;
+        xMove = !xMove;
 
         return [result, ""];
 
     };
 
-    const getCPUMove = () => game.getCPUMove(xRound);
+    const getCPUMove = () => game.getCPUMove(xMove);
 
     const getWinCode = () => game.getWinCode();
 
-    const setUpGame = () => {
+    const setUpRound = () => {
 
-        n_rounds = 0;
-        xRound = p1First;
-        _ready = true;
-        _started = false;
+        n_moves = 0;
+        xMove = p1First;
+        roundReady = true;
+        _roundStarted = false;
         winner1 = winner2 = tie = false;
 
         let dim = game.getDimension();
@@ -547,13 +549,14 @@ const gameControl = (() => {
 
     const start = () => {
         p1First = true;
+        _gameStarted = false;
         game.resetPlayerScores();
-        setUpGame();
+        setUpRound();
     };
 
-    const startNewGame = () => {
+    const startNewRound = () => {
         p1First = !p1First;
-        setUpGame();
+        setUpRound();
     };
 
     return {
@@ -568,17 +571,18 @@ const gameControl = (() => {
         getCurrentPlayerMark,
         getOtherPlayerName,
         getOtherPlayerMark,
-        cpuRound,
+        cpuMove,
         setDimension,
         changePlayerType,
         ready,
-        started,
+        gameStarted,
+        roundStarted,
         finished,
         newMove,
         getCPUMove,
         getWinCode,
         start,
-        startNewGame
+        startNewRound
 
     };
 
@@ -620,8 +624,7 @@ const gameInterface = (() => {
 
     const changePlayerName = (evt) => {
 
-        target = evt.target;
-        let p1 = target.id === "p1-name-btn";
+        let p1 = evt.target.id === "p1-name-btn";
         let name = p1 ? p1NameInput.value : p2NameInput.value;
 
         if(name) {
@@ -643,14 +646,14 @@ const gameInterface = (() => {
     }
 
     const showCursor = () => {
-        if(!gameControl.finished() && !gameControl.cpuRound()) {
+        if(gameControl.finished() || gameControl.cpuMove()) {
+            hideCursor(); //hide custom cursors
+            gameBoardEl.style.cursor = "auto";
+        }
+        else {
             document.getElementById(gameControl.getCurrentPlayerMark() + "cursor").style.display = "block";
             document.getElementById(gameControl.getOtherPlayerMark() + "cursor").style.display = "none";
             gameBoardEl.style.cursor = "none";
-        }
-        else {
-            hideCursor(); //hide custom cursors
-            gameBoardEl.style.cursor = "auto";
         }
     }
 
@@ -697,7 +700,7 @@ const gameInterface = (() => {
 
         showCursor();
 
-        if(gameControl.cpuRound() && !gameControl.finished())
+        if(gameControl.cpuMove() && !gameControl.finished())
             cpuMove();
 
     }
@@ -722,7 +725,7 @@ const gameInterface = (() => {
                 cellBtn.addEventListener("click", (evt) => {
 
                     const cell = evt.target;
-                    if(!cell.hasAttribute("marked") && !gameControl.finished() && !gameControl.cpuRound()) {
+                    if(!cell.hasAttribute("marked") && !gameControl.finished() && !gameControl.cpuMove()) {
             
                         if(p1NameInput.parentElement.checkVisibility()) {
                             updateScore();
@@ -761,7 +764,7 @@ const gameInterface = (() => {
         if(!gameControl.ready()) {
             //gameControl.setDimension(dim);
             //buildBoard();
-            startNewGame();
+            startNewRound();
         }
         else {
             //gameControl.setDimension(dim);
@@ -785,15 +788,15 @@ const gameInterface = (() => {
         gameControl.start();
     }
 
-    const startNewGame = () => {
+    const startNewRound = () => {
         if(!gameControl.ready()) {
             document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("marked"));
             document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("win"));
-            gameControl.startNewGame();
+            gameControl.startNewRound();
             updateScore();
             writeToDisplay("", gameControl.getCurrentPlayerName());
         }
-        else if(!gameControl.started())
+        else if(!gameControl.roundStarted())
             cpuMove();
     }
 
@@ -821,7 +824,7 @@ const gameInterface = (() => {
 
     writeToDisplay("", gameControl.getCurrentPlayerName());
 
-    startBtn.addEventListener("click", startNewGame);
+    startBtn.addEventListener("click", startNewRound);
     resetBtn.addEventListener("click", reset);
 
     gameBoardEl.addEventListener("mouseenter", () => {showCursor();});
@@ -843,10 +846,12 @@ const gameInterface = (() => {
 
     document.querySelectorAll(".player-btn").forEach((e) => {
         e.addEventListener("click", (evt) => {
-            let dialog = document.querySelector(".type-player-dialog");
-            dialog.setAttribute(evt.target.id.includes("p1") ? "p1" : "p2", "");
-            dialog.removeAttribute(evt.target.id.includes("p1") ? "p2" : "p1", "");
-            document.querySelector(".type-player-dialog").showModal();
+            if(!gameControl.gameStarted()) {
+                let dialog = document.querySelector(".type-player-dialog");
+                dialog.setAttribute(evt.target.id.includes("p1") ? "p1" : "p2", "");
+                dialog.removeAttribute(evt.target.id.includes("p1") ? "p2" : "p1", "");
+                document.querySelector(".type-player-dialog").showModal();
+            }
         })
     });
 
