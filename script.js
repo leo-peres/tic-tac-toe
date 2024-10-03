@@ -96,13 +96,16 @@ function cpuPlayerFactory(mark, type) {
         let nEmpty = empCells.length;
 
         let row, col;
+        let r = Math.random();
         if(empCells.some((x) => x[2])) {
-            let e = empCells.find((x) => x[2]);
-            [row, col] = [e[0], e[1]];
+            let a = empCells.filter((x) => x[2]);
+            let i = Math.floor(r*a.length);
+            [row, col] = [a[i][0], a[i][1]];
         }
         else if(empCells.some((x) => x[3])) {
-            let e = empCells.find((x) => x[3]);
-            [row, col] = [e[0], e[1]];
+            let a = empCells.filter((x) => x[3]);
+            let i = Math.floor(r*a.length);
+            [row, col] = [a[i][0], a[i][1]];
         }
         else {
             let r = Math.floor(nEmpty*Math.random());
@@ -119,18 +122,22 @@ function cpuPlayerFactory(mark, type) {
         let nEmpty = empCells.length;
 
         let row, col;
+        let r = Math.random();
         if(empCells.some((x) => x[2])) {
-            let e = empCells.find((x) => x[2]);
-            [row, col] = [e[0], e[1]];
+            let a = empCells.filter((x) => x[2]);
+            let i = Math.floor(r*a.length);
+            [row, col] = [a[i][0], a[i][1]];
         }
         else if(empCells.some((x) => x[3])) {
-            let e = empCells.find((x) => x[3]);
-            [row, col] = [e[0], e[1]];
+            let a = empCells.filter((x) => x[3]);
+            let i = Math.floor(r*a.length);
+            [row, col] = [a[i][0], a[i][1]];
         }
         else if(empCells.reduce((max, e) => e[4] > max ? e[4] : max, -1) > 0) {
             let max = empCells.reduce((max, x) => x[4] > max ? x[4] : max, -1);
-            let e = empCells.find((x) => x[4] == max);
-            [row, col] = [e[0], e[1]];
+            let a = empCells.filter((x) => x[4] == max);
+            let i = Math.floor(r*a.length);
+            [row, col] = [a[i][0], a[i][1]];
         }
         else {
             let r = Math.floor(nEmpty*Math.random());
