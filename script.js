@@ -612,6 +612,7 @@ const gameInterface = (() => {
     const resetBtn = document.querySelector(".reset-btn");
 
     let dim = 3;
+    let cpuTimeoutID;
 
     const writeToDisplay = (code, name) => {
         if(code == "w")
@@ -660,7 +661,7 @@ const gameInterface = (() => {
     const hideCursor = () => {document.querySelectorAll(".cursor-img").forEach((c) => {c.style.display = "none";});};
 
     const cpuMove = () => {
-        setTimeout(() => {
+        cpuTimeoutID = setTimeout(() => {
             let [row, col] = gameControl.getCPUMove();
             newMove(row, col);
         }, 300);
@@ -671,6 +672,7 @@ const gameInterface = (() => {
         document.querySelectorAll(".cell").forEach((e) => e.removeAttribute("win"));
         p1Container.replaceChildren(p1Name, p1NameInput.parentElement, p1Score);
         p2Container.replaceChildren(p2Name, p2NameInput.parentElement, p2Score);
+        clearTimeout(cpuTimeoutID);
         gameControl.start();
         writeToDisplay("", gameControl.getCurrentPlayerName());
     }
@@ -686,6 +688,12 @@ const gameInterface = (() => {
     }
 
     const newMove = (row, col) => {
+
+        if(!gameControl.gameStarted()) {
+            updateScore();
+            p1Container.replaceChildren(p1Name, p1Score, p1NameInput.parentElement);
+            p2Container.replaceChildren(p2Name, p2Score, p2NameInput.parentElement);
+        }
 
         markCell(row, col, gameControl.getCurrentPlayerMark());
 
@@ -727,12 +735,6 @@ const gameInterface = (() => {
                     const cell = evt.target;
                     if(!cell.hasAttribute("marked") && !gameControl.finished() && !gameControl.cpuMove()) {
             
-                        if(p1NameInput.parentElement.checkVisibility()) {
-                            updateScore();
-                            p1Container.replaceChildren(p1Name, p1Score, p1NameInput.parentElement);
-                            p2Container.replaceChildren(p2Name, p2Score, p2NameInput.parentElement);
-                        }
-            
                         let row = parseInt(cell.getAttribute("row"));
                         let col = parseInt(cell.getAttribute("col"));
 
@@ -761,17 +763,9 @@ const gameInterface = (() => {
             e.setAttribute("height", 315/dim);
         });
 
-        if(!gameControl.ready()) {
-            //gameControl.setDimension(dim);
-            //buildBoard();
+        if(!gameControl.ready())
             startNewRound();
-        }
-        else {
-            //gameControl.setDimension(dim);
-            //buildBoard()
-            //start();
-        }
-
+        
     }
 
     const changePlayerType = (type, p1) => {
@@ -839,8 +833,10 @@ const gameInterface = (() => {
 
     document.querySelectorAll(".dim-btn").forEach((btn) => {
         btn.addEventListener("click", (evt) => {
-            let dim = parseInt(evt.target.getAttribute("dim"));
-            changeDimension(dim);
+            if(!gameControl.roundStarted()) {
+                let dim = parseInt(evt.target.getAttribute("dim"));
+                changeDimension(dim);
+            }
         });
     });
 
