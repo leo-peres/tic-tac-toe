@@ -3,7 +3,16 @@
     --royal-blue: #01295f;
     --cerulean: #437f97;
     --olive: #849324;
-    --yellow: #ffb30f;
+    --header-font-color: #ffaa00;
+    --bg-color: #01295f;
+
+    --font-color: #facc15;
+
+    --btn-font-color: var(--display-bg-color);
+    --btn-bg-color: var(--display-font-color);
+    --btn-border-dark: #e08f00;
+    --btn-border-light: #ffc531;
+
     --red: #fd151b;
 
     --cross-path: url(./images/cross.svg);
@@ -11,24 +20,57 @@
     --green-cross-path: url(./images/cross-green.svg);
     --green-circle-path: url(./images/circle-green.svg);
 
+    --btn-border-size: 4px;
+
     --btn-width: 100px;
     --btn-height: 40px;
+
+    --game-bg-color: #0e2f66;
+
+    --display-font-color: #ffaa00;
+    --display-bg-color: #000239;
 
 }
 
 body {
-    background-color: var(--royal-blue);
+    background-color: var(--bg-color);
     margin: 0;
     height: 100vh;
 
     display: grid;
     grid-template-rows: 120px 1fr;
     justify-content: center;
-    gap: 36px;
+}
+
+button {
+    color: var(--btn-font-color);
+    background-color: var(--btn-bg-color);
+    font-weight: bold;
+    padding: 0;
+    cursor: pointer;
+
+    border-left: var(--btn-border-size) solid var(--btn-border-light);
+    border-top: var(--btn-border-size) solid var(--btn-border-light);
+    border-right: var(--btn-border-size) solid var(--btn-border-dark);
+    border-bottom: var(--btn-border-size) solid var(--btn-border-dark);
+}
+
+button:active {
+    /*
+    border-left: var(--btn-border-size) solid var(--btn-border-dark);
+    border-top: var(--btn-border-size) solid var(--btn-border-dark);
+    border-right: var(--btn-border-size) solid var(--btn-border-light);
+    border-bottom: var(--btn-border-size) solid var(--btn-border-light);
+    */
+
+    border-left: var(--btn-border-size) solid var(--btn-border-dark);
+    border-top: var(--btn-border-size) solid var(--btn-border-dark);
+    border-right: var(--btn-border-size) solid var(--btn-border-light);
+    border-bottom: var(--btn-border-size) solid var(--btn-border-light);
 }
 
 .game-header {
-    color: var(--yellow);
+    color: var(--header-font-color);
     font-size: 3.8rem;
     text-align: center;
 
@@ -36,6 +78,9 @@ body {
 }
 
 .game-container {
+    background-color: var(--game-bg-color);
+    margin: 16px 0px 32px;
+
     grid-row: 2;
 
     display: grid;
@@ -44,37 +89,24 @@ body {
 }
 
 .display {
-    color: var(--olive);
+    color: var(--display-font-color);
+    background-color: var(--display-bg-color);
     font-size: 2.4rem;
     font-weight: bold;
-    margin: auto;
 
     grid-row: 1;
-    grid-column: 2;
+    grid-column: 1 / 4;
+
+    display: grid;
+    justify-content: center;
+    align-items: center;
 }
 
 .game-options {
-    color: var(--red);
+    color: var(--font-color);
     font-weight: bold;
+    margin-top: 24px;
 }
-
-.game-options button {
-    color: #fafafa;
-    background-color: var(--red);
-    font-weight: inherit;
-    padding: 0;
-    cursor: pointer;
-
-    --light-border: #ff5941;
-    --dark-border: #c80000;
-    --border-size: 4px;
-
-    border-left: var(--border-size) solid var(--light-border);
-    border-top: var(--border-size) solid var(--light-border);
-    border-right: var(--border-size) solid var(--dark-border);
-    border-bottom: var(--border-size) solid var(--dark-border)
-}
-
 
 .player-options {
     grid-row: 2;
@@ -82,12 +114,14 @@ body {
 
     display: grid;
     grid-template-rows: 1fr 1fr;
+    gap: 24px;
 }
 
 .player-container {
 
     display: grid;
     grid-template-rows: 48px 48px 1fr;
+    gap: 6px;
 }
 
 .player-container > * {
@@ -122,13 +156,13 @@ body {
     gap: 4px;
 }
 
-.player-name-input label {
-    margin: auto 0px 0px;
+.player-name-label {
+    margin: auto 0px 0px 8px;
 }
 
 .player-name-input input,
 .player-name-input input:focus {
-    color: #fafafa;
+    color: var(--btn-font-color);
     background-color: var(--cerulean);
     font-size: 1.2rem;
     height: 24px;
@@ -142,7 +176,7 @@ body {
 .player-name-input button {
     width: 36px;
     height: 28px;
-    margin: 4px 0px 0px 4px;
+    margin: 4px 0px 0px 8px;
 }
 
 .gameboard {
@@ -210,21 +244,9 @@ body {
 }
 
 .game-btn-container button {
-    color: #fafafa;
-    background-color: var(--olive);
-    font-weight: bold;
     width: var(--btn-width);
     height: var(--btn-height);
     margin: auto;
-
-    --light-border: #b0be50;
-    --dark-border: #5a6a00;
-    --border-size: 4px;
-
-    border-left: var(--border-size) solid var(--light-border);
-    border-top: var(--border-size) solid var(--light-border);
-    border-right: var(--border-size) solid var(--dark-border);
-    border-bottom: var(--border-size) solid var(--dark-border);
 }
 
 .dim-chooser {
@@ -240,6 +262,7 @@ body {
 }
 
 .dim-chooser h1 {
+    margin: 0 auto;
     font-size: 1.6rem;
 }
 
@@ -271,7 +294,7 @@ body {
 }
 
 .type-player-opt {
-    color: #fafafa;
+    color: var(--btn-font-color);
     font-weight: bold;
     background-color: #ff5941;
     border: 0;
@@ -283,20 +306,7 @@ body {
 }
 
 .tpd-cancel-btn {
-    color: #fafafa;
-    font-weight: bold;
-    background-color: #c80000;
     width: 120px;
     height: 48px;
     margin: auto;
-    cursor: pointer;
-
-    --light-border: #fc4929;
-    --dark-border: #960000;
-    --border-size: 4px;
-
-    border-left: var(--border-size) solid var(--light-border);
-    border-top: var(--border-size) solid var(--light-border);
-    border-right: var(--border-size) solid var(--dark-border);
-    border-bottom: var(--border-size) solid var(--dark-border)
 }

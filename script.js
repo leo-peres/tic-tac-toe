@@ -103,10 +103,13 @@ function cpuPlayerFactory(mark, type) {
 
             let max = empCells.reduce((max, x) => x[4] > max ? x[4] : max, -1);
             let a = empCells.filter((x) => x[4] == max);
+
             if(a.some((rc) => isDiagonal(rc)))
                 a = a.filter((rc) => isDiagonal(rc));
+
             let i = Math.floor(r*a.length);
             [row, col] = [a[i][0], a[i][1]];
+
         }
         else {
             let r = Math.floor(nEmpty*Math.random());
@@ -561,7 +564,7 @@ const gameInterface = (() => {
 
     const gameBoardEl = document.querySelector(".gameboard");
 
-    const display = document.querySelector(".display");
+    const display = document.querySelector(".display span");
 
     const p1Container = document.getElementById("p1-container");
     const p1Name = document.getElementById("p1-btn");
