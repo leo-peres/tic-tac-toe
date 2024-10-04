@@ -760,7 +760,7 @@ const gameInterface = (() => {
             updateScore();
             writeToDisplay("", gameControl.getCurrentPlayerName());
         }
-        else if(!gameControl.roundStarted())
+        else if(!gameControl.roundStarted() && gameControl.cpuMove())
             cpuMove();
     }
 

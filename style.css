@@ -1,8 +1,13 @@
 :root {
 
+    --cross-path: url(./images/cross.svg);
+    --circle-path: url(./images/circle.svg);
+    --green-cross-path: url(./images/cross-green.svg);
+    --green-circle-path: url(./images/circle-green.svg);
+
+
     --royal-blue: #01295f;
     --cerulean: #437f97;
-    --olive: #849324;
     --header-font-color: #ffaa00;
     --bg-color: #01295f;
 
@@ -13,22 +18,22 @@
     --btn-border-dark: #e08f00;
     --btn-border-light: #ffc531;
 
-    --red: #fd151b;
-
-    --cross-path: url(./images/cross.svg);
-    --circle-path: url(./images/circle.svg);
-    --green-cross-path: url(./images/cross-green.svg);
-    --green-circle-path: url(./images/circle-green.svg);
-
     --btn-border-size: 4px;
 
     --btn-width: 100px;
     --btn-height: 40px;
 
+    /* GAME */
     --game-bg-color: #0e2f66;
 
+    /* DISPLAY */
     --display-font-color: #ffaa00;
     --display-bg-color: #000239;
+
+    /* DIALOG */
+    --dialog-bg-color: var(--game-bg-color);
+    --dialog-opt-btn-color: var(--btn-border-light);
+    --dialog-opt-btn-hover-color: #fed7aa;
 
 }
 
@@ -56,13 +61,6 @@ button {
 }
 
 button:active {
-    /*
-    border-left: var(--btn-border-size) solid var(--btn-border-dark);
-    border-top: var(--btn-border-size) solid var(--btn-border-dark);
-    border-right: var(--btn-border-size) solid var(--btn-border-light);
-    border-bottom: var(--btn-border-size) solid var(--btn-border-light);
-    */
-
     border-left: var(--btn-border-size) solid var(--btn-border-dark);
     border-top: var(--btn-border-size) solid var(--btn-border-dark);
     border-right: var(--btn-border-size) solid var(--btn-border-light);
@@ -80,11 +78,14 @@ button:active {
 .game-container {
     background-color: var(--game-bg-color);
     margin: 16px 0px 32px;
+    border: 1px solid #080808;
+
+    box-shadow: 0px 0px 3px 2px #080808 inset;
 
     grid-row: 2;
 
     display: grid;
-    grid-template-rows: 80px 420px 80px;
+    grid-template-rows: 80px 420px 1fr;
     grid-template-columns: 280px 420px 280px;
 }
 
@@ -93,6 +94,11 @@ button:active {
     background-color: var(--display-bg-color);
     font-size: 2.4rem;
     font-weight: bold;
+    border: 1px solid #080808;
+    border-bottom: 0;
+    margin-bottom: 8px;
+
+    box-shadow: 0px 2px 3px #080808;
 
     grid-row: 1;
     grid-column: 1 / 4;
@@ -180,11 +186,8 @@ button:active {
 }
 
 .gameboard {
-    background-color: #080808;
-    /*width: 480px;
-    height: 480px;
-    margin: 120px auto 0;*/
-    /*cursor: url(./images/cross.svg), auto;*/
+    background-color: #040020;
+    border: 2px solid #040020;
     cursor: none;
 
     grid-row: 2;
@@ -196,7 +199,7 @@ button:active {
     grid-template-columns: repeat(calc(var(--dim)), 1fr);
     grid-template-rows: repeat(calc(var(--dim)), 1fr);
     grid-auto-flow: row;
-    gap: 6px;
+    gap: 4px;
 
 }
 
@@ -282,7 +285,7 @@ button:active {
 }
 
 .type-player-dialog {
-    background-color: var(--red);
+    background-color: var(--dialog-bg-color);
 }
 
 .type-player-chooser{
@@ -296,13 +299,17 @@ button:active {
 .type-player-opt {
     color: var(--btn-font-color);
     font-weight: bold;
-    background-color: #ff5941;
+    background-color: var(--dialog-opt-btn-color);
     border: 0;
     cursor: pointer;
 }
 
 .type-player-opt:hover {
-    background-color: #ff8c69;
+    background-color:var(--dialog-opt-btn-hover-color);
+}
+
+.type-player-opt:active {
+    border: 0;
 }
 
 .tpd-cancel-btn {
