@@ -2,6 +2,8 @@ function cpuPlayerFactory(mark, type) {
 
     const otherMark = mark === "X" ? "O" : "X";
 
+    const dim = () => gameBoard.getDimension();
+
     const mayWin = (s, rem) => !s.includes(otherMark) && s.split('-').length - 1 <= rem;
 
     const winner = (s, dim) => !s.includes(otherMark) && s.split(mark).length == dim;
@@ -78,64 +80,31 @@ function cpuPlayerFactory(mark, type) {
 
     const getMark = () => mark;
 
-    const easy = () => {
-
-        const empCells = emptyCells();
-        let nEmpty = empCells.length;
-
-        let r = Math.floor(nEmpty*Math.random());
-        let [row, col] = [empCells[r][0], empCells[r][1]]
-
-        return [row, col];
-
-    }
-
-    const medium = () => {
+    const getMove = () => {
 
         const empCells = emptyCells();
         let nEmpty = empCells.length;
 
         let row, col;
         let r = Math.random();
-        if(empCells.some((x) => x[2])) {
+        if(type >= 3 && empCells.some((x) => x[2])) {
             let a = empCells.filter((x) => x[2]);
             let i = Math.floor(r*a.length);
             [row, col] = [a[i][0], a[i][1]];
         }
-        else if(empCells.some((x) => x[3])) {
+        else if(type >= 3 && empCells.some((x) => x[3])) {
             let a = empCells.filter((x) => x[3]);
             let i = Math.floor(r*a.length);
             [row, col] = [a[i][0], a[i][1]];
         }
-        else {
-            let r = Math.floor(nEmpty*Math.random());
-            [row, col] = [empCells[r][0], empCells[r][1]]
-        }
+        else if(type >= 4 && empCells.reduce((max, e) => e[4] > max ? e[4] : max, -1) > 0) {
 
-        return [row, col];
+            let isDiagonal = (rc) => rc[0] === rc[1] || rc[0] === dim() - rc[1] + 1;
 
-    }
-
-    const hard = () => {
-
-        const empCells = emptyCells();
-        let nEmpty = empCells.length;
-
-        let row, col;
-        let r = Math.random();
-        if(empCells.some((x) => x[2])) {
-            let a = empCells.filter((x) => x[2]);
-            let i = Math.floor(r*a.length);
-            [row, col] = [a[i][0], a[i][1]];
-        }
-        else if(empCells.some((x) => x[3])) {
-            let a = empCells.filter((x) => x[3]);
-            let i = Math.floor(r*a.length);
-            [row, col] = [a[i][0], a[i][1]];
-        }
-        else if(empCells.reduce((max, e) => e[4] > max ? e[4] : max, -1) > 0) {
             let max = empCells.reduce((max, x) => x[4] > max ? x[4] : max, -1);
             let a = empCells.filter((x) => x[4] == max);
+            if(a.some((rc) => isDiagonal(rc)))
+                a = a.filter((rc) => isDiagonal(rc));
             let i = Math.floor(r*a.length);
             [row, col] = [a[i][0], a[i][1]];
         }
@@ -147,8 +116,6 @@ function cpuPlayerFactory(mark, type) {
         return [row, col];
 
     }
-
-    const getMove = (type === "e" && easy) || (type === "m" && medium) || hard;
 
     return {
 
@@ -379,13 +346,13 @@ const game = (() => {
     const incPlayer2Score = () => {player2.score++;};
 
     const changeP1Type = (type) => {
-        player1.cpu = type === "p" ? null : cpuPlayerFactory("X", type);
-        player1.isCPU = !(type === "p");
+        player1.cpu = type === 1 ? null : cpuPlayerFactory("X", type);
+        player1.isCPU = !(type === 1);
     }
 
     const changeP2Type = (type) => {
-        player2.cpu = type === "p" ? null : cpuPlayerFactory("O", type);
-        player2.isCPU = !(type === "p");
+        player2.cpu = type === 1 ? null : cpuPlayerFactory("O", type);
+        player2.isCPU = !(type === 1);
     }
 
     const p1CPU = () => player1.isCPU;
@@ -769,10 +736,10 @@ const gameInterface = (() => {
     }
 
     const changePlayerType = (type, p1) => {
-        type = (type === "human" && "p") ||
-               (type === "cpu-easy" && "e") ||
-               (type === "cpu-medium" && "m") ||
-               (type === "cpu-hard" && "h");
+        type = (type === "human" && 1) ||
+               (type === "cpu-easy" && 2) ||
+               (type === "cpu-medium" && 3) ||
+               (type === "cpu-hard" && 4);
         gameControl.changePlayerType(type, p1);
     }
 
