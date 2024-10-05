@@ -4,7 +4,14 @@ function cpuPlayerFactory(mark, type) {
 
     const dim = () => gameBoard.getDimension();
 
-    const mayWin = (s, rem) => !s.includes(otherMark) && s.split('-').length - 1 <= rem;
+    const mayWin = (s, mark, rem) => !s.includes(mark) && s.split('-').length - 1 <= rem;
+
+    const score = (s, rem, oRem, defensive) => {
+        if(defensive)
+            return mayWin(s, mark, oRem) + (s.includes(otherMark) && !s.includes(mark));
+        else
+            return mayWin(s, otherMark, rem);
+    }
 
     const winner = (s, dim) => !s.includes(otherMark) && s.split(mark).length == dim;
 
@@ -18,6 +25,11 @@ function cpuPlayerFactory(mark, type) {
 
         let dim = state[0].length;
         let rem = mark === "X" ? state[dim] : state[dim+1];
+        let oRem = mark === "X" ? state[dim+1] : state[dim];
+
+        let countMark = state.slice(0, dim).reduce((s, r) => s + r.split(mark).length - 1, 0);
+        let countOMark = state.slice(0, dim).reduce((s, r) => s + r.split(otherMark).length - 1, 0);
+        let defensive = countMark < countOMark;
 
         let w = false;
         let l = false;
@@ -28,14 +40,15 @@ function cpuPlayerFactory(mark, type) {
             s += state[row-1][j];
         if(winner(s, dim)) w = true;
         if(loser(s, dim)) l = true;
-        count += Number(mayWin(s, rem));
+        count += score(s, rem, oRem, defensive);
 
         s = "";
         for(let i = 0; i < dim; i++)
             s += state[i][col-1];
         if(winner(s, dim)) w = true;
         if(loser(s, dim)) l = true;
-        count += Number(mayWin(s, rem));
+        count += score(s, rem, oRem, defensive);
+
 
         if(row === col) {
             s = "";
@@ -43,7 +56,8 @@ function cpuPlayerFactory(mark, type) {
                 s += state[k][k];
             if(winner(s, dim)) w = true;
             if(loser(s, dim)) l = true;
-            count += Number(mayWin(s, rem));
+            count += score(s, rem, oRem, defensive);
+
         }
 
         if(row === dim - col + 1) {
@@ -52,7 +66,8 @@ function cpuPlayerFactory(mark, type) {
                 s += state[k][dim - k - 1];
             if(winner(s, dim)) w = true;
             if(loser(s, dim)) l = true;
-            count += Number(mayWin(s, rem));
+            count += score(s, rem, oRem, defensive);
+
         }
 
         return [w, l, count];
@@ -99,13 +114,13 @@ function cpuPlayerFactory(mark, type) {
         }
         else if(type >= 4 && empCells.reduce((max, e) => e[4] > max ? e[4] : max, -1) > 0) {
 
-            let isDiagonal = (rc) => rc[0] === rc[1] || rc[0] === dim() - rc[1] + 1;
+            let inDiagonal = (rc) => rc[0] === rc[1] || rc[0] === dim() - rc[1] + 1;
 
             let max = empCells.reduce((max, x) => x[4] > max ? x[4] : max, -1);
             let a = empCells.filter((x) => x[4] == max);
 
-            if(a.some((rc) => isDiagonal(rc)))
-                a = a.filter((rc) => isDiagonal(rc));
+            if(a.some((rc) => inDiagonal(rc)))
+                a = a.filter((rc) => inDiagonal(rc));
 
             let i = Math.floor(r*a.length);
             [row, col] = [a[i][0], a[i][1]];
