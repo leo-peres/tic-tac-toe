@@ -33,21 +33,21 @@ function cpuPlayerFactory(mark, type) {
 
         let w = false;
         let l = false;
-        let count = 0;
+        let cellScore = 0;
 
         let s = "";
         for(let j = 0; j < dim; j++)
             s += state[row-1][j];
         if(winner(s, dim)) w = true;
         if(loser(s, dim)) l = true;
-        count += score(s, rem, oRem, defensive);
+        cellScore += score(s, rem, oRem, defensive);
 
         s = "";
         for(let i = 0; i < dim; i++)
             s += state[i][col-1];
         if(winner(s, dim)) w = true;
         if(loser(s, dim)) l = true;
-        count += score(s, rem, oRem, defensive);
+        cellScore += score(s, rem, oRem, defensive);
 
 
         if(row === col) {
@@ -56,7 +56,7 @@ function cpuPlayerFactory(mark, type) {
                 s += state[k][k];
             if(winner(s, dim)) w = true;
             if(loser(s, dim)) l = true;
-            count += score(s, rem, oRem, defensive);
+            cellScore += score(s, rem, oRem, defensive);
 
         }
 
@@ -66,11 +66,11 @@ function cpuPlayerFactory(mark, type) {
                 s += state[k][dim - k - 1];
             if(winner(s, dim)) w = true;
             if(loser(s, dim)) l = true;
-            count += score(s, rem, oRem, defensive);
+            cellScore += score(s, rem, oRem, defensive);
 
         }
 
-        return [w, l, count];
+        return [w, l, cellScore];
 
     }
 
@@ -610,7 +610,8 @@ const gameInterface = (() => {
 
     const changePlayerName = (evt) => {
 
-        let p1 = evt.target.id === "p1-name-btn";
+        let p1 = evt.target.id === "p1-name-btn" || evt.target.id === "p1-name-input";
+        let input = p1 ? p1NameInput : p2NameInput;
         let name = p1 ? p1NameInput.value : p2NameInput.value;
 
         if(name) {
@@ -624,6 +625,8 @@ const gameInterface = (() => {
                 p2Name.innerText = name;
             }
         }
+
+        input.value = "";
 
     }
 
@@ -678,6 +681,8 @@ const gameInterface = (() => {
             updateScore();
             p1Container.replaceChildren(p1Name, p1Score, p1NameInput.parentElement);
             p2Container.replaceChildren(p2Name, p2Score, p2NameInput.parentElement);
+            p1NameInput.value = "";
+            p2NameInput.value = "";
         }
 
         markCell(row, col, gameControl.getCurrentPlayerMark());
@@ -794,6 +799,11 @@ const gameInterface = (() => {
         }
 
     }));
+
+    document.addEventListener("keypress", (evt) => {
+        if(evt.key === "Enter" && (document.activeElement === p1NameInput ||  document.activeElement === p2NameInput))
+            changePlayerName(evt);
+    })
 
     p1NameBtn.addEventListener("click", changePlayerName);
     p2NameBtn.addEventListener("click", changePlayerName);
