@@ -11,11 +11,19 @@ function cpuPlayerFactory(mark, type) {
             return mayWin(s, mark, oRem) + (s.includes(otherMark) && !s.includes(mark));
         else
             return mayWin(s, otherMark, rem);
-    }
+    };
 
     const winner = (s, dim) => !s.includes(otherMark) && s.split(mark).length == dim;
 
     const loser = (s, dim) => !s.includes(mark) && s.split(otherMark).length  == dim;
+
+    const forbidden = () => {
+        let state = gameBoard.getState();
+        let empCells = emptyCells();
+        return empCells.length == 6 &&
+               ((state[0][0] === otherMark && state[2][2] === otherMark) || (state[0][2] === otherMark && state[2][0] === otherMark)) &&
+               state[1][1] === mark;
+    };
 
     const investigate = (rcPair) => {
 
@@ -35,9 +43,7 @@ function cpuPlayerFactory(mark, type) {
         let l = false;
         let cellScore = 0;
 
-        let s = "";
-        for(let j = 0; j < dim; j++)
-            s += state[row-1][j];
+        let s = state[row-1];
         if(winner(s, dim)) w = true;
         if(loser(s, dim)) l = true;
         cellScore += score(s, rem, oRem, defensive);
@@ -72,7 +78,7 @@ function cpuPlayerFactory(mark, type) {
 
         return [w, l, cellScore];
 
-    }
+    };
 
     const emptyCells = () => {
 
@@ -83,9 +89,8 @@ function cpuPlayerFactory(mark, type) {
         const empCells = [];
         for(let i = 0; i < dim; i++) {
             for(let j = 0; j < dim; j++) {
-                if(state[i][j] === "-") {
+                if(state[i][j] === "-")
                     empCells.push([i+1, j+1].concat(investigate([i+1, j+1])));
-                }
             }
         }
         
@@ -97,20 +102,35 @@ function cpuPlayerFactory(mark, type) {
 
     const getMove = () => {
 
+        let randInt = (i, j) => {
+
+            if(j === undefined) {
+                j = i;
+                i = 0;
+            }
+
+            return Math.floor((j - i)*Math.random() + i);
+
+        };
+
         const empCells = emptyCells();
         let nEmpty = empCells.length;
 
         let row, col;
-        let r = Math.random();
         if(type >= 3 && empCells.some((x) => x[2])) {
             let a = empCells.filter((x) => x[2]);
-            let i = Math.floor(r*a.length);
+            let i = randInt(a.length);
             [row, col] = [a[i][0], a[i][1]];
         }
         else if(type >= 3 && empCells.some((x) => x[3])) {
             let a = empCells.filter((x) => x[3]);
-            let i = Math.floor(r*a.length);
+            let i = randInt(a.length);
             [row, col] = [a[i][0], a[i][1]];
+        }
+        else if(type >= 4 && dim() == 3 && forbidden()) {
+            let r1 = randInt(2);
+            let r2 = 2*randInt(2) - 1;
+            [row, col] = [r1*r2 + 2, (1-r1)*r2 + 2];
         }
         else if(type >= 4 && empCells.reduce((max, e) => e[4] > max ? e[4] : max, -1) > 0) {
 
@@ -122,13 +142,13 @@ function cpuPlayerFactory(mark, type) {
             if(a.some((rc) => inDiagonal(rc)))
                 a = a.filter((rc) => inDiagonal(rc));
 
-            let i = Math.floor(r*a.length);
+            let i = randInt(a.length);
             [row, col] = [a[i][0], a[i][1]];
 
         }
         else {
-            let r = Math.floor(nEmpty*Math.random());
-            [row, col] = [empCells[r][0], empCells[r][1]]
+            let r = randInt(nEmpty);
+            [row, col] = [empCells[r][0], empCells[r][1]];
         }
 
         return [row, col];
